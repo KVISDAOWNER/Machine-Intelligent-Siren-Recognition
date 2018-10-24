@@ -12,7 +12,7 @@ def rec(filename, duration, fs, channels, sampwidth):
     # Actual recording, returns digital audio as an array of floats
     recording = sd.rec(int(duration * fs), samplerate=fs, channels=channels)
 
-    # We synchonise to ensure that finish the recording before writing the array of floats
+    # We synchronise to ensure that finish the recording before writing the array of floats
     sd.wait()
 
     # Actual file writing
