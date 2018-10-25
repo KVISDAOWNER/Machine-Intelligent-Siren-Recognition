@@ -13,13 +13,15 @@ class RecordSpecs:
 
 # Records and saves the samples in a queue like folder, deleting oldest sample before reaching the samples_kept
 def live_audio_rec(dir, samples_kept, r_spec):
-    for i in range (0, samples_kept):
-        sr.rec(dir +"sample" + str(i) +".wav", r_spec.sample_secs, r_spec.fs, r_spec.ch, r_spec.sw)
+    basename = "sample"
+    file_type =".wav"
+    for i in range(0, samples_kept):
+        sr.rec(dir + basename + str(i)+file_type, r_spec.sample_secs, r_spec.fs, r_spec.ch, r_spec.sw)
     while True:
-        os.remove(dir+"sample0.wav")
-        for j in range (0, samples_kept-1):
-            os.rename(dir+"sample"+str(j+1)+".wav", dir+"sample"+str(j)+".wav")
-        sr.rec(dir +"sample" + str(samples_kept-1) +".wav", r_spec.sample_secs, r_spec.fs, r_spec.ch, r_spec.sw)
+        os.remove(dir + basename + "0" + file_type)
+        for j in range(0, samples_kept-1):
+            os.rename(dir + basename + str(j+1) + file_type, dir + basename + str(j) + file_type)
+        sr.rec(dir + basename + str(samples_kept-1) + file_type, r_spec.sample_secs, r_spec.fs, r_spec.ch, r_spec.sw)
 
 
 if __name__ == '__main__':
