@@ -67,7 +67,7 @@ def make_specgram_for_dir():
 
 if __name__ == "__main__":
     # Full path to the desired wav-file
-    path= "C:\\Users\\Jacob\\Music\\Samples\\Alle\\Sirene56.wav"
+    path="C:\\Users\\Jacob\\Music\\Samples\\Alle\\Sirene56.wav"
     # name of it.
     name = "Sirene56"
     make_specgram(path, name)
