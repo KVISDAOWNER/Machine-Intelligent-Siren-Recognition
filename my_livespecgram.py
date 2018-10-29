@@ -4,7 +4,19 @@ import pyaudio
 import scipy.io.wavfile as wavefile
 import math as math
 import numpy as np
+from matplotlib.mlab import specgram
 # source: https://stackoverflow.com/questions/33680633/how-to-change-pyplot-specgram-x-and-y-axis-scaling
+
+
+def get_specgram_data_from_wav():
+    sample_rate, data = wavefile.read(path)
+
+    # the resolution of specgram (how big one "pixel" is, measured in hz according y-axis)
+    res_in_hz = 50
+
+    spectro, freq, t, = specgram(data, Fs=sample_rate, NFFT=math.ceil(sample_rate / res_in_hz))
+
+    return spectro, freq, t
 
 
 # makes a spectrogram from a wav-file, with the option to include colorbar
@@ -135,7 +147,7 @@ if __name__ == "__main__":
     path="C:\\Users\\Jacob\\Music\\Samples\\Alle\\Sirene56.wav"
     # name of it.
     name = "Sirene56"
-    #make_specgram_from_wav(make_cbar=True)
+    make_specgram_from_wav(make_cbar=True)
     #make_specgram_from_mic()
     # make_specgram_for_dir()
 
