@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo
+echo "Pre-commit hook starting up..."
+echo
+# Runs all the test files in pro dir, and "greps" the output line with "FAILED"
+if py -m unittest discover -f 2>&1 | grep -q "FAILED"; then
+  echo "Some test(s) FAILED. Commit NOT successfull!"
+  exit 1
+fi
