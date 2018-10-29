@@ -7,7 +7,7 @@ The git hook(s) are intented to be used during the development of the project. T
 
     $ git config core.hooksPath .githooks
 # Testing
-To run all unit test:
+To run all unit tests:
 
     $ python -m unittest discover
     
