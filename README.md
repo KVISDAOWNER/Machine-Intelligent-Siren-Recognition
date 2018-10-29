@@ -3,7 +3,7 @@ Intelligent embedded system that recognizes emergency vehicle sirens in order to
 
 
 # Git hooks
-To enable the git hooks found in githooks/, make sure to run:
+To enable the git hooks in the githooks/ directory, make sure to run the following command in the project directory:
 
     $ git config core.hooksPath .githooks
 
