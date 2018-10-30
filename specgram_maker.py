@@ -32,7 +32,8 @@ class SpecgramMaker:
 
     # makes a spectrogram from a wav-file,
     # path could be C:\\...\\Music\\ and filename could be Sirene56.wav
-    def make_specgram_from_wav(self, pathtofile, filename, outputpath=None, resolution=50, cmap_name="inferno",
+    def make_specgram_from_wav(self, pathtofile, filename, outputpath=None,
+                               resolution=50, cmap_name="inferno",
                                make_cbar=True, grid=False,
                                ylim=None, xlim=None, figx=20,
                                figy=12, fontsize=20, onlyspecgram=False):
@@ -180,8 +181,8 @@ class SpecgramMaker:
     # makes spectrogram for all wav-files in a directory
     # to indicate the folder with the file, just give the path
     # to one of the files in the constructor and then do anything else as usual
-    def make_specgram_for_dir(self, dirpath, outputpath=None, resolution=50, cmap_name="inferno",
-                              make_cbar=True, grid=False,
+    def make_specgram_for_dir(self, dirpath, outputpath=None, resolution=50,
+                              cmap_name="inferno", make_cbar=True, grid=False,
                               ylim=None, xlim=None, figx=20, onlyspecgram=False,
                               figy=12, fontsize=20):
         directory = dirpath
