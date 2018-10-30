@@ -63,13 +63,7 @@ def make_specgram_from_wav(path, filename, make_cbar=True, grid=False,
     _finish_plot(axes, xlim, ylim, fontsize, pic,
                  fig, make_cbar, grid)
 
-    # saves the file in this folder.
-    # for quick view, call this: plt.show()
-    plt.savefig(outputpath+filename+".png")
-
-    # This clears the memory used by the figure.
-    # Otherwise memory usage becomes too high if this function is called inside a loop.
-    plt.close(fig)
+    _save_and_close_fig(outputpath, filename, fig)
 
 
 # makes spectrogram for all wav-files in a directory
@@ -84,6 +78,16 @@ def make_specgram_for_dir(dirpath, make_cbar=True, grid=False,
             name_of_file = args[0]
             make_specgram_from_wav(directory+filename, name_of_file, make_cbar, grid,
                                    outputpath, ylim, xlim, figx, figy, fontsize)
+
+
+def _save_and_close_fig(outputpath, filename, fig):
+    # saves the file in this folder.
+    # for quick view, call this: plt.show()
+    plt.savefig(outputpath + filename + ".png")
+
+    # This clears the memory used by the figure.
+    # Otherwise memory usage becomes too high if this function is called inside a loop.
+    plt.close(fig)
 
 
 # private functions which perform cosmetic actions on the given plot.
@@ -174,12 +178,7 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
         _finish_plot(axes, xlim, ylim, fontsize, pic,
                      fig, make_cbar, grid)
 
-        # saves the file in the given folder.
-        plt.savefig(outputpath+filename+str(x)+".png")
-
-        # This clears the memory used by the figure.
-        # Otherwise memory usage becomes too high if plt.subplots is called inside a loop.
-        plt.close(fig)
+        _save_and_close_fig(outputpath, filename+str(x), fig)
 
         x += sample_length
 
