@@ -1,27 +1,33 @@
-import pyaudio
-import scipy.io.wavfile as wavefile
-from matplotlib.mlab import specgram
-import matplotlib.pyplot as plt
 import os
-import numpy as np
 import math
+import time
+import matplotlib.pyplot as plt
+from matplotlib.mlab import specgram
+import scipy.io.wavfile as wavefile
 from mic_recorder import MicRecorder
 
 
-# return the data corresponding to the spectrogram made from the wav file at location: path.
+# Returns the data corresponding to the spectrogram made from the wav file at location: "path".
 def get_specgram_data_from_wav(path):
+    # getting the data from the .wav file.
     sample_rate, data = wavefile.read(path)
 
     # the resolution of specgram (how big one "pixel" is, measured in hz according y-axis)
     res_in_hz = 50
 
+    # making spectrogram using mlab, and thereby only generating the data corresponding to the specgram.
     spectro, freq, t, = specgram(data, Fs=sample_rate, NFFT=math.ceil(sample_rate / res_in_hz))
 
     return spectro, freq, t
 
 
+# private method used for getting a specfic colormap.
 def _get_cmap(nameofcmap="inferno"):
+
     cmap = plt.get_cmap(nameofcmap)
+
+    # this simply says, that is the dB goes below what the
+    # cmap can represent show it as the color k (a dark color)
     cmap.set_under(color="k", alpha=None)
 
     return cmap
@@ -32,6 +38,7 @@ def make_specgram_from_wav(path, filename, make_cbar=True, grid=False,
                            outputpath=None, ylim=None, xlim=None, figx=20,
                            figy=12, fontsize=20):
 
+    # if the outputpath is not specfied output it at the same location as the .wav file.
     if outputpath is None:
         outputpath = path
 
@@ -79,6 +86,7 @@ def make_specgram_for_dir(dirpath, make_cbar=True, grid=False,
                                    outputpath, ylim, xlim, figx, figy, fontsize)
 
 
+# private functions which perform cosmetic actions on the given plot.
 def _finish_plot(axes, xlim, ylim, fontsize, pic,
                  fig, make_cbar, grid):
 
@@ -109,6 +117,7 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
                            ylim=None, xlim=None, figx=20,
                            figy=12, fontsize=20, total_length=10, sample_length=1):
 
+    # otherwise it is a bit tricky to determine how much to shift.
     if viewable % sample_length != 0:
         raise AttributeError("viewable must be dividable by sample_length")
 
@@ -131,14 +140,14 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
     a_data = []
 
     print("Recording.")
-    import time
     t0 = time.time()
     for x in range(0, totaltime):
+
         # figsize is additional parameters, indicating the size of the figure.
         # This is used instead of plt.figure, since we here get a Axesobject .
         fig, axes = plt.subplots(figsize=(figx, figy))
 
-        # getting the data from the sound recorded from the mic in the given span
+        # getting the data from the sound recorded from the mic in the given span.
         data = micrecorder.get_data_from_mic(stream)
 
         # if the spectrogram is showing the viewable amount of seconds
@@ -166,9 +175,9 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
         plt.close(fig)
 
     t1 = time.time()
-    print("Total time span: " + t1-t0)
 
     print("Done.")
+    print("Total time span: " + t1-t0)
 
     # closing the stream to the microphone.
     stream.close()
