@@ -121,6 +121,9 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
     if viewable % sample_length != 0:
         raise AttributeError("viewable must be dividable by sample_length")
 
+    if total_length % viewable !=0:
+        raise AttributeError("total_length must be dividable by viewable")
+
     # getting the cmap
     cmap = _get_cmap("inferno")
 
@@ -141,7 +144,11 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
 
     print("Recording.")
     t0 = time.time()
-    for x in range(0, totaltime):
+
+    # getting the amount of samples.
+    x = 0
+
+    while x < totaltime:
 
         # figsize is additional parameters, indicating the size of the figure.
         # This is used instead of plt.figure, since we here get a Axesobject .
@@ -173,6 +180,8 @@ def make_specgram_from_mic(outputpath, filename, viewable, make_cbar=True, grid=
         # This clears the memory used by the figure.
         # Otherwise memory usage becomes too high if plt.subplots is called inside a loop.
         plt.close(fig)
+
+        x += sample_length
 
     t1 = time.time()
 
