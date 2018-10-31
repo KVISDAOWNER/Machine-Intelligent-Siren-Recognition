@@ -152,7 +152,7 @@ class SpecgramMaker:
             # if the spectrogram is showing the viewable amount of seconds
             # we begin to shift out the start of the spectrogram.
             if x >= viewable:
-                del a_data[0:micrecorder.rate]
+                del a_data[0:(micrecorder.rate*samplespan)]
 
             # converting a ndarray to an array/list otherwise we cant extend it to a_data.
             a_data.extend(data.ravel())
