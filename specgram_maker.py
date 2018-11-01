@@ -62,14 +62,15 @@ class SpecgramMaker:
 
         self._save_and_close_fig(outputpath, filename, fig, onlyspecgram)
 
-    def _save_and_close_fig(self, outputpath, filename, fig, onlyspecgram, optional=""):
+    def _save_and_close_fig(self, outputpath, wav_file_name, fig, onlyspecgram, optional=""):
+        # Removes the .wav in the end of the wav file's name
+        filename = wav_file_name[::-1].split("vaw.",1)[1][::-1]
         # saves the file in this folder.
-        nameoffile = filename.split(".")[0]
         if onlyspecgram:
-            plt.savefig(outputpath + nameoffile + optional + ".png",
+            plt.savefig(outputpath + filename + optional + ".png",
                         bbox_inches="tight", pad_inches=-0.1)
         else:
-            plt.savefig(outputpath + nameoffile + optional + ".png")
+            plt.savefig(outputpath + filename + optional + ".png")
 
         # This clears the memory used by the figure.
         # Otherwise memory usage becomes too high if this function is called inside a loop.
@@ -196,5 +197,3 @@ class SpecgramMaker:
                                             cmap_name, make_cbar,
                                             grid, ylim, xlim, figx, figy,
                                             fontsize, onlyspecgram)
-
-
