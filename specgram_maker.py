@@ -64,7 +64,7 @@ class SpecgramMaker:
 
     def _save_and_close_fig(self, outputpath, wav_file_name, fig, onlyspecgram, optional=""):
         # Removes the .wav in the end of the wav file's name
-        filename = wav_file_name[::-1].split("vaw.",1)[1][::-1]
+        filename = wav_file_name[::-1].split("vaw.", 1)[1][::-1]
         # saves the file in this folder.
         if onlyspecgram:
             plt.savefig(outputpath + filename + optional + ".png",
