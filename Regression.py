@@ -2,33 +2,72 @@ import numpy as N
 import matplotlib.pyplot as Plot
 from scipy.io import wavfile as W
 import specgram_maker as SM
+import xlsxwriter as Xlsx
+FREQUENCY_INTEVALS = 442
+PATH = "C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Lydeksempler\\"
+PATH2 = "C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Dataset\\NoSiren\\"
 
-A = []
-colomns = []
 
-if __name__ == "__main__":
-    sm = SM.SpecgramMaker()
+class Regression:
 
-    spec, freq, t = sm.get_specgram_data_from_wav("Wav\\", "Sirene23-Edited.wav")
+    #function for writing data to Xlsx document
+    def filewrite(self, alist, t):
 
-    for i in range(len(spec[1])):
-        H = 0
-        column = 0
-        for j in range(442):
-            if spec[j][i] > H:
-                H = spec[j][i]
-                column = j
+        RegressionWorkbook = Xlsx.Workbook("Datapointsfourth.xlsx")
 
-        A.append(H)
-        colomns.append(50 * column)
+        Worksheet = RegressionWorkbook.add_worksheet("Data for Regression")
 
-    f = open("DataPoints.txt", "w+")
+        alistLength = len(alist)
 
-    for i in range(len(t)):
+        i = 0
+
+        while(i < alistLength):
+            Worksheet.write(i,1, alist[i])
+            Worksheet.write(i, 0, t[i])
+            i = i + 32
+
+        RegressionWorkbook.close()
+
+    #function for extracting relevant data from a list of wavfiles.
+    def extract(self, files, filenames):
+
+        columns = []
+        FilesFrequenciesAr = []
+        time = []
+        sm = SM.SpecgramMaker()
+        l=0
+        for file in files:
+            spec, freq, t = sm.get_specgram_data_from_wav(PATH, filenames[l])
+            for i in range(len(spec[1])):
+                MaxFrequencyValue = 0
+                column = 0
+                for j in range(FREQUENCY_INTEVALS):
+                    if spec[j][i] > MaxFrequencyValue:
+                        MaxFrequencyValue = spec[j][i]
+                        column = j
+
+            #A.append(H) not in use
+                columns.append(50 * column)
+            FilesFrequenciesAr.append(columns)
+            columns.clear()
+            time.append(t)
+
+            l += 1
+        return FilesFrequenciesAr, time
+
+
+
+
+
+   # f = open("DataPoints.txt", "w+")
+
+    #filewrite(colomns, t)
+
+    """for i in range(len(t)):
         f.write(str(t[i]) + ", " + str(colomns[i]) + "\n")
 
     Plot.plot(t, colomns)
-    Plot.show()
+    Plot.show()"""
 
 
 
