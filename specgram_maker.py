@@ -19,7 +19,7 @@ class SpecgramMaker:
 
         return spectro, freq, t
 
-    # private method used for getting a specfic colormap.
+    # private method used for getting a specific colormap.
     def _get_cmap(self, cmap_name):
 
         cmap = plt.get_cmap(cmap_name)
