@@ -32,28 +32,28 @@ class Regression:
     def extract(self, files, filenames):
 
         columns = []
-        FilesFrequenciesAr = []
+        files_frequencies_array = []
         time = []
         sm = SM.SpecgramMaker()
-        l=0
+        index = 0
         for file in files:
             spec, freq, t = sm.get_specgram_data_from_wav(PATH, filenames[l])
             for i in range(len(spec[1])):
-                MaxFrequencyValue = 0
+                max_frequency_value = 0
                 column = 0
                 for j in range(FREQUENCY_INTEVALS):
-                    if spec[j][i] > MaxFrequencyValue:
-                        MaxFrequencyValue = spec[j][i]
+                    if spec[j][i] > max_frequency_value:
+                        max_frequency_value = spec[j][i]
                         column = j
 
             #A.append(H) not in use
                 columns.append(50 * column)
-            FilesFrequenciesAr.append(columns)
+            files_frequencies_array.append(columns)
             columns.clear()
             time.append(t)
 
-            l += 1
-        return FilesFrequenciesAr, time
+            index += 1
+        return files_frequencies_array, time
 
 
 
@@ -68,6 +68,3 @@ class Regression:
 
     Plot.plot(t, colomns)
     Plot.show()"""
-
-
-
