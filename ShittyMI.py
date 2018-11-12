@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from scipy.io import wavfile
-import Regression as r
+import RegressionJacob as r
 import os
 from numpy import fft
 
@@ -8,7 +8,7 @@ import numpy as np
 
 CONST_CLIPSIZE = 150000  # shortest clip contains this number of samples
 PATH = "C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Lydeksempler\\"
-PATH2 = "C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Dataset\\NoSiren\\"
+PATH2 = "C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\100to1\\"
 
 
 # This function is for ensuring all the lists of wavfiles have the same number of samples.
@@ -31,7 +31,7 @@ def SetSize(files):
 
 
 def LoadFolder():
-    directory = os.listdir(PATH)
+    directory = os.listdir(PATH2)
     Sirens = []
     Noises = []
     SirenFileName = []
@@ -51,36 +51,54 @@ def LoadFolder():
     Noises = SetSize(Noises)
     return Sirens, Noises, SirenFileName, NoiseFileName
 
+def TrainigSplit(SirenList, NoiseList):
+    NumberOfSirens = len(SirenList)
+    NumberOfNoises = len(NoiseList)
 
-Sirens, Noises, SirenFileName, NoiseFileName = LoadFolder()
+    X = []
+    Y = []
+    Z = []
 
-reg = r.Regression()
+    for i in range(NumberOfSirens-2):
+        X.append(SirenList[i])
+        Y.append(True)
 
-SirensData, SirensTime = reg.extract(Sirens,SirenFileName)
-NoisesData, NoisesTime = reg.extract(Noises,NoiseFileName)
+    for j in range(NumberOfNoises - 5):
+        X.append([NoiseList[j]])
+        Y.append(False)
 
+    Z.append(SirenList[NumberOfSirens-2:NumberOfSirens])
+    Z.append(NoiseList[NumberOfNoises-5:NumberOfNoises])
 
-NumberOfSirens = len(SirensData)
-NumberOfNoises = len(NoisesData)
-
-X = NoisesData[:2]  #
-Y = []
-Z = []
-
-for element in X:
-    Y.append(False)
-
+    return X, Y, Z
 
 
-for i in range(NumberOfSirens-10):
-    X.append(SirensData[i])
-    Y.append(True)
 
+if __name__ == "__main__":
+
+    #Sirens, Noises, SirenFileName, NoiseFileName = LoadFolder()
+
+    reg = r.Regression()
+
+    FileData, DataTime = reg.extract(PATH2)
+    FileDataLength = len(FileData)
+
+    Y = []
+    X = []
+    Z = []
+
+    for i in range(FileDataLength-10):
+
+        X.append(FileData[i])
+
+        if((i+1) % 100 == 0):
+            Y.append(True)
+        else:
+            Y.append(False)
+
+    Z = FileData[990:]
 
 # Test
-Z.append(NoisesData[2])
-Z.append(SirensData[NumberOfSirens-10:])
-
 LR = LogisticRegression(solver='liblinear')
 LR.fit(X, Y)
 prediction = LR.predict(Z)
