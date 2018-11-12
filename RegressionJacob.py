@@ -243,7 +243,38 @@ class Regression:
 
 if __name__ == "__main__":
     reg = Regression()
-    reg.fit_and_predict_with_vectors()
+    f, t, index_of_sirens, index_without_sirens = reg.extract("C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Dataset\\SirenClips\\test\\")
+    # to plot the first call plt.plot(t[0],f[0]) and then plt.show()
+
+    # so coloum 0 in spec are the frequencies in at the time given in t[0]
+    # so if t[10] is equal to 100 milisec, then the frequencies in the
+    # coloums of spec 0 to 10 are the frequencies for the first 100 miliseconds.
+
+    vectors = []
+
+    for i in range(0, len(f)):
+        ff = f[i]
+        ft = t[i]
+        fPoints = []
+        for j in range(0, len(ft)):
+            fPoints.append(Point(ft[j], ff[j]))
+
+        vectorsforfile = []
+
+        for j in range(1, len(fPoints)):
+            vectorsforfile.append([fPoints[j].x - fPoints[j - 1].x, fPoints[j].y - fPoints[j - 1].y])
+
+        vectors.append(vectorsforfile)
+
+    LR = LogisticRegression(solver='liblinear')
+
+    X = [vectors[0], vectors[2]]
+    Y = [False, True]
+    Z = [vectors[1]]
+
+    LR.fit(X, Y)
+    Prediction = LR.predict(Z)
+    print(Prediction)
 
 
 
