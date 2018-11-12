@@ -36,7 +36,7 @@ class Regression:
 
 if __name__ == "__main__":
     reg = Regression()
-    f, t = reg.extract("C:\\Users\\Jacob\\Music\\Samples\\Comp5\\")
+    f, t = reg.extract("C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\SirenClips\\")
     for x in range(0, len(t)):
         plt.plot(t[x],f[x])
         plt.show()

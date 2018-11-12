@@ -46,7 +46,7 @@ class Point:
 
 if __name__ == "__main__":
     reg = Regression()
-    f, t = reg.extract("C:\\Users\\Jacob\\Music\\Samples\\Comp5\\")
+    f, t = reg.extract("C:\\Users\\Bjarke\\Desktop\\Universitet\\5.semester\\Dataset\\SirenClips\\test\\")
     # to plot the first call plt.plot(t[0],f[0]) and then plt.show()
 
     # so coloum 0 in spec are the frequencies in at the time given in t[0]
@@ -71,9 +71,13 @@ if __name__ == "__main__":
 
     LR = LogisticRegression(solver='liblinear')
 
-    X = [vectors[0], vectors[1]]
-    Y = [True, False]
-    Z = [vectors[2]]
+    X = [vectors[0], vectors[2]]
+    Y = [False, True]
+    Z = [vectors[1]]
+
+    LR.fit(X, Y)
+    Prediction = LR.predict(Z)
+    print(Prediction)
 
     
 
