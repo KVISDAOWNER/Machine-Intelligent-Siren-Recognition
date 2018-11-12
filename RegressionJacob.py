@@ -1,7 +1,5 @@
 import os
 import specgram_maker
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 FREQUENCY_INTEVALS = 442
 
@@ -20,12 +18,12 @@ class Regression:
         index_of_sirens = []
         index_of_not_sirens = []
         rows = []
-        FilesFrequenciesAr = []
+        files_frequencies_ar = []
         time = []
         sm = specgram_maker.SpecgramMaker()
 
         directory = os.listdir(path)
-        l = 0 # used to count the index of the files.
+        l = 0  # used to count the index of the files.
         for filename in directory:
             if not filename.endswith(".wav"):
                 continue
@@ -36,18 +34,18 @@ class Regression:
 
             spec, freq, t = sm.get_specgram_data_from_wav(path, filename)
             for i in range(len(spec[1])):  # iterating over coloums.
-                MaxFrequencyValue = 0
+                max_frequency_value = 0
                 row = 0
                 for j in range(FREQUENCY_INTEVALS):  # Finding the row with highest frequency.
-                    if spec[j][i] > MaxFrequencyValue:
-                        MaxFrequencyValue = spec[j][i]
+                    if spec[j][i] > max_frequency_value:
+                        max_frequency_value = spec[j][i]
                         row = j
                 rows.append(50 * row)
-            FilesFrequenciesAr.append(rows.copy())
+            files_frequencies_ar.append(rows.copy())
             rows.clear()
             time.append(t)
             l += 1
-        return FilesFrequenciesAr, time, index_of_sirens, index_of_not_sirens
+        return files_frequencies_ar, time, index_of_sirens, index_of_not_sirens
 
     # gets the vectors for the files represented by the f and t.
     def get_vectors_for_files(self, f, t):
@@ -164,27 +162,27 @@ class Regression:
             margin = 0.1
 
             # used to contain all the different summed up X'es and Y'es
-            his_sumX = []
-            his_sumY = []
-            sumX = 0
-            sumY = 0
+            his_sum_x = []
+            his_sum_y = []
+            sum_x = 0
+            sum_y = 0
             for j in range(0, len(fPoints)):
-                if ft[j] >= margin: # if we with the mark
-                    margin += interval/1000 # we increase it by inteval/1000, so if 100ms it is 0.1
-                    his_sumX.append(sumX) # add the sumX and sumY to the history
-                    his_sumY.append(sumY)
-                    sumX = fPoints[j].x # and start the new summations of X'es and Y'es
-                    sumY = fPoints[j].y
-                else: # if we havent hit the mark, just keep adding.
-                    sumX += fPoints[j].x
-                    sumY += fPoints[j].y
+                if ft[j] >= margin:  # if we with the mark
+                    margin += interval/1000  # we increase it by inteval/1000, so if 100ms it is 0.1
+                    his_sum_x.append(sum_x)  # add the sum_x and sum_y to the history
+                    his_sum_y.append(sum_y)
+                    sum_x = fPoints[j].x  # and start the new summations of X'es and Y'es
+                    sum_y = fPoints[j].y
+                else:  # if we havent hit the mark, just keep adding.
+                    sum_x += fPoints[j].x
+                    sum_y += fPoints[j].y
 
             # then we calculate the vectors X and Y values.
-            for j in range(1, len(his_sumX)):
+            for j in range(1, len(his_sum_x)):
                 # we take the X'es and Y'es in the 0.2 sec and
                 # subtracts from the 0.1 sec X's and Y's
-                vectorsforfile.append(his_sumX[j] - his_sumX[j-1])
-                vectorsforfile.append(his_sumY[j] - his_sumY[j-1])
+                vectorsforfile.append(his_sum_x[j] - his_sum_x[j-1])
+                vectorsforfile.append(his_sum_y[j] - his_sum_y[j-1])
                 # doing it this way makes it so the final list is 2D.
 
             # and add that to the overall list.
@@ -194,6 +192,7 @@ class Regression:
             vectors.append(vectorsforfile)
         return vectors
 
+    # this is the main Jacob had before committing.
     def fit_and_predict_with_vectors(self):
         # Extracting training files
         f, t, index_of_sirens, index_of_not_sirens = self.extract("C:\\Users\\Jacob\\Music\\100til1\\")
