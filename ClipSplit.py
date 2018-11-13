@@ -2,8 +2,7 @@ import specgram_maker as SM
 import os
 
 
-
-def extract(path, max_freq = 442):
+def extract(path, max_freq=442):
     sm = SM.SpecgramMaker()
     directory = os.listdir(path)
     time = []
