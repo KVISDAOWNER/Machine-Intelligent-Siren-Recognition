@@ -12,8 +12,8 @@ import ClipSplit as ClipSplit
 waves = []
 
 
-def get_training_data(directory):
-    _waves, time, labels = ClipSplit.extract(directory)
+def get_training_data(directory, max_freq=442):
+    _waves, time, labels = ClipSplit.extract(directory, max_freq)
 
     return _waves, labels
 
@@ -52,7 +52,7 @@ def get_verification_data(path):
 
 if __name__ == "__main__":
     #  waves, labels = get_training_data("C:\\Users\\Magnus\\Downloads\\BGNLessThanOrEq\\")
-    waves, labels = get_training_data("Wav\\")
+    waves, labels = get_training_data("Wav\\", 40)
     model = svm.SVC(kernel="linear")
     waves = cut(waves)
 

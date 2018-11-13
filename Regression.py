@@ -1,13 +1,12 @@
 import os
 import specgram_maker
 import matplotlib.pyplot as plt
-FREQUENCY_INTEVALS = 442
 
 
 class Regression:
 
     # function for extracting relevant data from a list of wavfiles.
-    def extract(self, path):
+    def extract(self, path, max_freq=442):
         labels = []
         rows = []
         FilesFrequenciesAr = []
@@ -28,7 +27,7 @@ class Regression:
             for i in range(len(spec[1])):  # iterating over coloums.
                 MaxFrequencyValue = 0
                 row = 0
-                for j in range(FREQUENCY_INTEVALS):  # Finding the row with highest frequency.
+                for j in range(max_freq):  # Finding the row with highest frequency.
                     if spec[j][i] > MaxFrequencyValue:
                         MaxFrequencyValue = spec[j][i]
                         row = j
@@ -40,6 +39,7 @@ class Regression:
         return FilesFrequenciesAr, time
 
 
+"""
     def extract_single_file(self, filename):
         sm = specgram_maker.SpecgramMaker()
         rows = []
@@ -58,7 +58,7 @@ class Regression:
         rows.clear()
         time.append(t)
         return FilesFrequenciesAr, time
-
+"""
 
 if __name__ == "__main__":
     reg = Regression()
