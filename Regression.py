@@ -9,9 +9,6 @@ class Regression:
     # function for extracting relevant data from a list of wavfiles.
     def extract(self, path):
         labels = []
-
-
-
         rows = []
         FilesFrequenciesAr = []
         time = []
@@ -19,12 +16,14 @@ class Regression:
 
         directory = os.listdir(path)
         for filename in directory:
-            if "siren" in filename:
+            if not filename.endswith(".wav"):
+                continue
+
+            if "SPCSiren" in filename or "siren" in filename or "sirenAt" in filename:
                 labels.append(True)
             else:
                 labels.append(False)
-            if not filename.endswith(".wav"):
-                continue
+
             spec, freq, t = sm.get_specgram_data_from_wav(path, filename)
             for i in range(len(spec[1])):  # iterating over coloums.
                 MaxFrequencyValue = 0
