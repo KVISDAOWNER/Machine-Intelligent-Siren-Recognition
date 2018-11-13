@@ -1,50 +1,66 @@
 import pandas as pd
 import numpy as np
 import sklearn.svm as svm
+from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import os
 from PIL import Image
 import Regression as R
 import specgram_maker as SM
+import ClipSplit as ClipSplit
 
 waves = []
-labels = []
-flat_waves = []
 
 
 def get_training_data(directory):
-    sm = SM.SpecgramMaker()
+    _waves, time, labels = ClipSplit.extract(directory)
+
+    return _waves, labels
+
+
+def cut(list):
+    smallest_length = len(list[0])
+    result = []
+    for i in range(len(list)):
+        if len(list[i]) < smallest_length:
+            smallest_length = len(list[i])
+
+    for i in range(len(list)):
+        ls = []
+        for j in range(smallest_length):
+            ls.append(list[i][j])
+        result.append(ls)
+    return result
+
+
+def cut_to_size(list, length):
+    result = []
+    for i in range(len(list)):
+        ls = []
+        for j in range(length):
+            ls.append(list[i][j])
+        result.append(ls)
+    return result
+
+
+def get_verification_data(path):
     r = R.Regression()
 
-    for filename in os.listdir(directory):
-        if filename == "Sirene21.wav":
-            labels.append(True)
-            sp, freq, t = sm.get_specgram_data_from_wav(directory, filename)
-
-            waves.append(sp)
-            print("Done importing from " + filename)
-
-
-def flatten_list(listlist):
-    for i in range(len(listlist)):
-        for j in range(len(listlist[i])):
-            flat_waves.append(listlist[i][j])
-
-
-def verify_list(list):
-    supposed_length = len(list[0])
-    print("Length is supposed to be " + str(supposed_length))
-    for i in range(len(list)):
-        if len(list[i]) != supposed_length:
-            print("list " + str(i) + " has " + str(len(list)) + " elements rather than " + str(supposed_length))
-    return True
+    _waves, time = r.extract(path)
+    return _waves
 
 
 if __name__ == "__main__":
-    get_training_data("Wav\\")
+    #  waves, labels = get_training_data("C:\\Users\\Magnus\\Downloads\\BGNLessThanOrEq\\")
+    waves, labels = get_training_data("Wav\\")
     model = svm.SVC(kernel="linear")
-    # flatten_list(waves)
-    # print(verify_list(flat_waves))
+    waves = cut(waves)
+
     model.fit(waves, labels)
     # accurately predict new data point
-    print("Done!")
+    verify_data = get_verification_data("C:\\Users\\Magnus\\Downloads\\TestSet5Seconds\\")
+
+    verify_data = cut_to_size(verify_data, 291)
+
+    predictions = model.predict(verify_data)
+    print(predictions)
