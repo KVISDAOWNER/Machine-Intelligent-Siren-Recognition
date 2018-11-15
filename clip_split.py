@@ -1,9 +1,9 @@
-import specgram_maker as SM
+import specgram_maker as sm
 import os
 
 
 def extract(path, max_freq=442):
-    sm = SM.SpecgramMaker()
+    specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
     time = []
     rows = []
@@ -16,7 +16,7 @@ def extract(path, max_freq=442):
 
         labels.append("sirenAt" in filename or "siren" in filename or "SPCSiren" in filename)
 
-        spec, freq, t = sm.get_specgram_data_from_wav(path, filename)
+        spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
         for i in range(len(spec[1])):  # iterating over coloums.
             max_dB = 0
             row = 0
@@ -66,3 +66,36 @@ def split_clips(files_frequencies_array, labels, file_names, time):
                 new_labels.append(False)
 
     return split_waves, new_labels
+
+def regression_extract(self, path, max_freq=442):
+    labels = []
+    rows = []
+    FilesFrequenciesAr = []
+    time = []
+    specmaker = sm.SpecgramMaker()
+
+    directory = os.listdir(path)
+    for filename in directory:
+        if not filename.endswith(".wav"):
+            continue
+
+        if "SPCSiren" in filename or "siren" in filename or "sirenAt" in filename:
+            labels.append(True)
+        else:
+            labels.append(False)
+
+        spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
+        for i in range(len(spec[1])):  # iterating over coloums.
+            MaxFrequencyValue = 0
+            row = 0
+            for j in range(max_freq):  # Finding the row with highest frequency.
+                if spec[j][i] > MaxFrequencyValue:
+                    MaxFrequencyValue = spec[j][i]
+                    row = j
+            rows.append(50 * row)
+        FilesFrequenciesAr.append(rows.copy())
+        rows.clear()
+        time.append(t)
+        print("Done importing " + filename + ".", labels[len(time) - 1], str(len(time) * 100 / len(directory)) + " %")
+    return FilesFrequenciesAr, time
+

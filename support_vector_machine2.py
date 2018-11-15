@@ -5,9 +5,9 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import os
 from PIL import Image
-import Regression as R
+import regression as R
 import specgram_maker as SM
-import ClipSplit as ClipSplit
+import clip_split as ClipSplit
 
 waves = []
 
