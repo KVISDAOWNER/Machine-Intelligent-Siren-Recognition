@@ -2,7 +2,7 @@ import specgram_maker as sm
 import os
 
 
-def extract(path, max_freq=442):
+def extract(path, max_freq=442, split=True):
     specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
     time = []
@@ -17,24 +17,27 @@ def extract(path, max_freq=442):
         labels.append("sirenAt" in filename or "siren" in filename or "SPCSiren" in filename)
 
         spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
-        for i in range(len(spec[1])):  # iterating over coloums.
+        for col in range(len(spec[1])):  # iterating over coloums.
             max_dB = 0
-            row = 0
-            for j in range(max_freq):  # Finding the row with highest frequency.
-                if spec[j][i] > max_dB:
-                    max_dB = spec[j][i]
-                    row = j
-            rows.append(50 * row)
+            max_row = 0
+            for row in range(max_freq):  # Finding the row with highest frequency.
+                if spec[row][col] > max_dB:
+                    max_dB = spec[row][col]
+                    max_row = row
+            rows.append(50 * max_row)
         files_frequencies_array.append(rows.copy())
         rows.clear()
         time.append(t)
         os.system("cls")
         print("Done importing " + filename + ".", labels[len(time) - 1], str(len(time) * 100 / len(directory)) + " %")
 
-    split_waves, labels = split_clips(files_frequencies_array, labels, directory, time)
+    if split:
+        split_waves, labels = split_clips(files_frequencies_array, labels, directory, time)
 
-    return split_waves, time, labels
+        return split_waves, time, labels
 
+    else:
+        return files_frequencies_array, time
 
 def find_subset_of_clip(clip, start, end, time):
     index_one = -1
@@ -67,35 +70,5 @@ def split_clips(files_frequencies_array, labels, file_names, time):
 
     return split_waves, new_labels
 
-def regression_extract(self, path, max_freq=442):
-    labels = []
-    rows = []
-    FilesFrequenciesAr = []
-    time = []
-    specmaker = sm.SpecgramMaker()
 
-    directory = os.listdir(path)
-    for filename in directory:
-        if not filename.endswith(".wav"):
-            continue
-
-        if "SPCSiren" in filename or "siren" in filename or "sirenAt" in filename:
-            labels.append(True)
-        else:
-            labels.append(False)
-
-        spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
-        for i in range(len(spec[1])):  # iterating over coloums.
-            MaxFrequencyValue = 0
-            row = 0
-            for j in range(max_freq):  # Finding the row with highest frequency.
-                if spec[j][i] > MaxFrequencyValue:
-                    MaxFrequencyValue = spec[j][i]
-                    row = j
-            rows.append(50 * row)
-        FilesFrequenciesAr.append(rows.copy())
-        rows.clear()
-        time.append(t)
-        print("Done importing " + filename + ".", labels[len(time) - 1], str(len(time) * 100 / len(directory)) + " %")
-    return FilesFrequenciesAr, time
 
