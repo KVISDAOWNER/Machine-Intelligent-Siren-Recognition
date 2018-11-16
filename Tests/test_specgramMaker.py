@@ -10,8 +10,8 @@ import os
 class TestSpecgramMaker(TestCase):
     def test_get_specgram_data_from_wav(self):
         specmaker = SpecgramMaker()
-        # This may cause problem idk.
-        data, freq, t= specmaker.get_specgram_data_from_wav(os.getcwd()+"\\Ressources\\", "Sirene23.wav")
+        data, freq, t = specmaker.get_specgram_data_from_wav(os.getcwd()+"\\Ressources\\for_test_specgramMaker\\",
+                                                             "siren23.wav")
         # I could assert if the correct matrix is given, however, it may be cumbersome,
         # and I that asserting if the matrix is made is equally good since this function gets its
         # matrix from a function from a library.

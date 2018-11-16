@@ -1,9 +1,9 @@
-import specgram_maker as SM
+import specgram_maker as sm
 import os
 
 
-def extract(path, max_freq=442, length=20):
-    sm = SM.SpecgramMaker()
+def extract(path, max_freq=442, split=True):
+    specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
     time = []
     rows = []
@@ -18,29 +18,27 @@ def extract(path, max_freq=442, length=20):
 
         labels.append("sirenAt" in filename or "siren" in filename or "SPCSiren" in filename)
 
-        spec, freq, t = sm.get_specgram_data_from_wav(path, filename)
-        for i in range(len(spec[1])):  # iterating over coloums.
+        spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
+        for col in range(len(spec[1])):  # iterating over coloums.
             max_dB = 0
-            row = 0
-            for j in range(max_freq):  # Finding the row with highest frequency.
-                if spec[j][i] > max_dB:
-                    max_dB = spec[j][i]
-                    row = j
-            rows.append(50 * row)
+            max_row = 0
+            for row in range(max_freq):  # Finding the row with highest frequency.
+                if spec[row][col] > max_dB:
+                    max_dB = spec[row][col]
+                    max_row = row
+            rows.append(50 * max_row)
         files_frequencies_array.append(rows.copy())
         rows.clear()
         time.append(t)
         print("Done importing " + filename + ".", labels[len(time) - 1], str(len(time) * 100 / len(directory)) + " %")
 
-    # if length is 20, we split them with the _split_clips function
-    if length == 20:
-        split_waves, labels = _split_clips(files_frequencies_array, labels, directory, time)
-    # otherwise we do nothing
+    if split:
+        split_waves, labels = split_clips(files_frequencies_array, labels, directory, time)
+
+        return split_waves, time, labels
+
     else:
-        split_waves = files_frequencies_array
-
-    return split_waves, time, labels
-
+        return files_frequencies_array, time
 
 def _find_subset_of_clip(clip, start, end, time):
     index_one = -1
@@ -91,3 +89,6 @@ def _split_clips(files_frequencies_array, labels, file_names, time):
     # split_waves are the frequencies split into 5-second clips.
     # new_labels are the labels of the 5-second clips. The two lists should have equal length.
     return split_waves, new_labels
+
+
+

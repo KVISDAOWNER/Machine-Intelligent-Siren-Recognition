@@ -5,17 +5,18 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import os
 from PIL import Image
-import Regression as R
+import regression as R
 import specgram_maker as SM
 import ClipSplit as ClipSplit
 from sklearn.naive_bayes import GaussianNB
 from sklearn import linear_model
+import clip_split as ClipSplit
 
 waves = []
 
 
-def get_training_data(directory, max_freq=442, length=20):
-    _waves, time, labels = ClipSplit.extract(directory, max_freq, length)
+def get_training_data(directory, max_freq=442):
+    _waves, time, labels = ClipSplit.extract(directory, max_freq)
 
     return _waves, labels
 
