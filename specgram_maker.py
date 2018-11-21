@@ -156,6 +156,7 @@ class SpecgramMaker:
                 del a_data[0:(micrecorder.rate*samplespan)]
 
             # converting a ndarray to an array/list otherwise we cant extend it to a_data.
+            # so adding the newly read sound.
             a_data.extend(data.ravel())
 
             # making the spectrogram, see doc for return values.
