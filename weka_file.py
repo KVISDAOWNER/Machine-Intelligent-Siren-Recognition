@@ -32,26 +32,22 @@ def extract_frequency_data(siren_dir, no_siren_dir, out, max_freq = 442):
 
     # extracting siren frequencies
     print("Extracting siren spectrograms")
-    f, t = e.extract(siren_dir, max_freq)
-    f1, t = e.extract(siren_dir, 40)
+    f, t = e.extract(siren_dir, 40)
 
-    g.extend(_arff_metadata("siren", len(f[0]*2), "siren", "nosiren"))
+    g.extend(_arff_metadata("siren", len(f[0]), "siren", "nosiren"))
 
     for x in range(len(f)):
         g_list = []
         g_list.extend(f[x])
-        g_list.extend(f1[x])
         g_list.append("siren")
         g.append(g_list)
 
     print("Extracting nosiren spectrograms")
     f, t = e.extract(no_siren_dir)
-    f1, t = e.extract(no_siren_dir, 40)
 
     for x in range(len(f)):
         g_list = []
         g_list.extend(f[x])
-        g_list.extend(f1[x])
         g_list.append("nosiren")
         g.append(g_list)
     write_row_data_excl(out, g)
@@ -105,8 +101,8 @@ def _extract_data_row(matrix, label):
 
 
 if __name__ == '__main__':
-    output_filename = "cmf_teesthøj3_50_50_1000.arff"
-    s_dir = "C:\\Users\\kristoffer\\Desktop\\teesthøj3_50_50_1000\\siren\\"
-    ns_dir = "C:\\Users\\kristoffer\\Desktop\\teesthøj3_50_50_1000\\nosiren\\"
-    extract_frequency_data(s_dir, ns_dir, output_filename)
+    output_filename = "mf_teest_clean.arff"
+    s_dir = "C:\\Users\\kristoffer\\Desktop\\data\\teestclean\\siren\\"
+    ns_dir = "C:\\Users\\kristoffer\\Desktop\\data\\teestclean\\nosiren\\"
+    extract_frequency_data(s_dir, ns_dir, output_filename, max_freq=40)
     # extract_data_csv(siren_dir, nosiren_dir, output_filename)
