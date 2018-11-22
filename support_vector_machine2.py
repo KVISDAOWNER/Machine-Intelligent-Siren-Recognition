@@ -5,9 +5,7 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import os
 from PIL import Image
-import regression as R
 import specgram_maker as SM
-import ClipSplit as ClipSplit
 from sklearn.naive_bayes import GaussianNB
 from sklearn import linear_model
 import clip_split as ClipSplit
@@ -15,18 +13,23 @@ import clip_split as ClipSplit
 waves = []
 
 
-def get_training_data(directory, max_freq=442):
-    _waves, time, labels = ClipSplit.extract(directory, max_freq)
+def get_training_data(directory, max_freq=442, training=True, split=True):
+    _waves, time, labels = ClipSplit.extract(directory, max_freq, training, split, divisions=5)
 
     return _waves, labels
 
 
-def cut(list):
+def _find_smallest_length(list):
     smallest_length = len(list[0])
-    result = []
     for i in range(len(list)):
         if len(list[i]) < smallest_length:
             smallest_length = len(list[i])
+    return smallest_length
+
+
+def cut(list):
+    smallest_length = _find_smallest_length(list)
+    result = []
 
     for i in range(len(list)):
         ls = []
@@ -46,66 +49,55 @@ def cut_to_size(list, length):
     return result
 
 
-def get_verification_data(path, max_freq=442):
-    r = R.Regression()
-
-    _waves, time = r.extract(path, max_freq)
-    return _waves
-
-
 if __name__ == "__main__":
-    #  waves, labels = get_training_data("C:\\Users\\Magnus\\Downloads\\BGNLessThanOrEq\\")
-    waves, labels = get_training_data("C:\\Users\\Magnus\\Desktop\\University\\5semester\\FirstHalf\\", 40)
-    svm_model = svm.SVC(kernel="linear")
-    bayes_model = linear_model.BayesianRidge()
-    nb_model = GaussianNB()
+    waves, labels = get_training_data("Wav\\", max_freq=40,
+                                      training=True, split=True)
     lr_model = LogisticRegression()
+    bayes_model = linear_model.BayesianRidge()
 
     print("Begin cutting")
     waves = cut(waves)
 
     print("Begin fitting")
-    print("nb")
-    nb_model.fit(waves, labels)
-    # print("svm")
-    # svm_model.fit(waves, labels)
-    print("lr")
     lr_model.fit(waves, labels)
-    print("bayes")
     bayes_model.fit(waves, labels)
 
     verify_data, actual_labels = get_training_data("C:\\Users\\Magnus\\Desktop\\University\\5semester\\SecondHalf\\",
-                                                   max_freq=40)
+                                                   max_freq=40, training=False, split=True)
 
     print("Cut verify data")
-    verify_data = cut_to_size(verify_data, 291)
+    verify_data = cut_to_size(verify_data, _find_smallest_length(verify_data))
 
-    print("begin get predictions", "svm")
-    # svm_predictions = svm_model.predict(verify_data)
-    # print("nb")
-    nb_predictions = nb_model.predict(verify_data)
-    print("lr")
     lr_predictions = lr_model.predict(verify_data)
-    print("bayes")
     bayes_predictions = bayes_model.predict(verify_data)
 
-    svm_correct, nb_correct, lr_correct, samples, bayes_correct = 0, 0, 0, 0, 0
+    true_positive, false_positive, true_negative, false_negative = 0, 0, 0, 0
 
     print("begin calculate accuracy")
+    print("logistic regression")
     for i in range(len(lr_predictions)):
-        # print("SVM:", svm_predictions[i], "NB:", nb_predictions[i], "LR:", lr_predictions[i],
-        # "actual value:", actual_labels[i])
-        # if svm_predictions[i] == actual_labels[i]:
-        #    svm_correct += 1
-        if nb_predictions[i] == actual_labels[i]:
-            nb_correct += 1
-        if lr_predictions[i] == actual_labels[i]:
-            lr_correct += 1
-        if bayes_predictions[i] == actual_labels[i]:
-            bayes_correct += 1
-        samples += 1
+        if lr_predictions[i] and actual_labels[i]:
+            true_positive += 1
+        elif lr_predictions[i] and not actual_labels[i]:
+            false_positive += 1
+        elif not lr_predictions[i] and actual_labels[i]:
+            false_negative += 1
+        else:
+            true_negative += 1
 
-    # print("svm accuracy:", 100 * svm_correct / samples)
-    print("NB accuracy:", 100 * nb_correct / samples)
-    print("LR accuracy:", 100 * lr_correct / samples)
-    print("Bayes accuracy", 100 * bayes_correct / samples)
+    print("true positive", true_positive, "false positive", false_positive, "false negative", false_negative,
+          "true negative", true_negative)
+    print("bayes")
+    true_positive, false_positive, true_negative, false_negative = 0, 0, 0, 0
+    for i in range(len(lr_predictions)):
+        if lr_predictions[i] and actual_labels[i]:
+            true_positive += 1
+        elif lr_predictions[i] and not actual_labels[i]:
+            false_positive += 1
+        elif not lr_predictions[i] and actual_labels[i]:
+            false_negative += 1
+        else:
+            true_negative += 1
+
+    print("true positive", true_positive, "false positive", false_positive, "false negative", false_negative,
+          "true negative", true_negative)
