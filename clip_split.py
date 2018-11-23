@@ -2,7 +2,11 @@ import specgram_maker as sm
 import os
 
 
-def extract(path, max_freq=442, training=True, split=True, divisions=4):
+# This method turns them into matrices that correspond to the spectrogram made
+# in SpecgramMaker.
+# Parameters:
+# Path
+def extract(path, max_freq=442, training=True, split=True, divisions=4, min_freq=0):
     specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
     time = []
@@ -20,7 +24,7 @@ def extract(path, max_freq=442, training=True, split=True, divisions=4):
         for col in range(len(spec[1])):  # iterating over coloums.
             max_dB = 0
             max_row = 0
-            for row in range(max_freq):  # Finding the row with highest frequency.
+            for row in range(min_freq, max_freq):  # Finding the row with highest frequency.
                 if spec[row][col] > max_dB:
                     max_dB = spec[row][col]
                     max_row = row
@@ -106,6 +110,8 @@ def split_testing(files_frequencies_array, labels, file_names, times, divisions=
             if "sirenAt" in file_names[i]:
                 siren_times = int(file_names[i].split('_')[3])
                 new_labels.append(siren_times - seconds_per_division < seconds_per_division * j)
+            elif labels[i]:
+                new_labels.append(True)
             else:
                 new_labels.append(False)
     # split_waves are the frequencies split into 5-second clips.
