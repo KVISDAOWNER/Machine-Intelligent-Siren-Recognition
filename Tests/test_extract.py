@@ -11,7 +11,7 @@ class TestExtract(TestCase):
         # Act
         split_waves, time, label = cs.extract(path, split=True)
 
-        freq, time1, = cs.extract(path, split=False)
+        freq, time1, nottestvalue = cs.extract(path, split=False)
 
         # Assert
         # These are the expected values.
