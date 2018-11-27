@@ -107,6 +107,18 @@ class SpecgramMaker:
             cbar = fig.colorbar(pic)
             cbar.set_label("Intensity dB", fontsize=fontsize)
 
+    def make_specgram_from_mic_matrix(self, micrecorder, stream):
+            
+        # getting the data from the sound recorded from the mic in the given span.
+        data = micrecorder.get_data_from_mic(stream)
+
+        data = data.ravel()
+
+        # making spectrogram using mlab, and thereby only generating the data corresponding to the specgram.
+        spectro, freq, t, = specgram(data, Fs=micrecorder.rate, NFFT=math.ceil(micrecorder.rate / 50))
+
+        return spectro, freq, t
+
     # makes a spectrogram from a wav-file, with the option to include colorbar
     def make_specgram_from_mic(self, outputpath, filename, viewablespan, total_length, sample_length,
                                resolution=50, cmap_name="inferno", make_cbar=True, grid=False,
