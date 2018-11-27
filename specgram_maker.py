@@ -108,28 +108,28 @@ class SpecgramMaker:
             cbar.set_label("Intensity dB", fontsize=fontsize)
 
     # makes a spectrogram from a wav-file, with the option to include colorbar
-    def make_specgram_from_mic(self, outputpath, filename, viewablespan, totalspan, samplespan,
+    def make_specgram_from_mic(self, outputpath, filename, viewablespan, total_length, sample_length,
                                resolution=50, cmap_name="inferno", make_cbar=True, grid=False,
                                ylim=None, xlim=None, figx=20, figy=12,
                                fontsize=20, onlyspecgram=False):
 
         # otherwise it is a bit tricky to determine how much to shift.
-        if viewablespan % samplespan != 0:
+        if viewablespan % sample_length != 0:
             raise AttributeError("viewable must be dividable by sample_length")
 
-        if totalspan % viewablespan != 0:
+        if total_length % viewablespan != 0:
             raise AttributeError("total_length must be dividable by viewable")
 
         # getting the cmap
         cmap = self._get_cmap(cmap_name)
 
         # instantiating a micrecorder indicating the span of a recording.
-        micrecorder = MicRecorder(samplespan)
+        micrecorder = MicRecorder(sample_length)
 
         # getting the stream to read from
         stream = micrecorder.get_stream()
 
-        totaltime = totalspan
+        totaltime = total_length
         viewable = viewablespan
 
         # the accumulated data used for the spectrogram.
@@ -138,10 +138,10 @@ class SpecgramMaker:
         print("Recording.")
         t0 = time.time()
 
-        # getting the amount of samples.
-        x = 0
 
-        while x < totaltime:
+        timerecorded = 0
+
+        while timerecorded < totaltime:
 
             # figsize is additional parameters, indicating the size of the figure.
             # This is used instead of plt.figure, since we here get a Axesobject .
@@ -152,11 +152,12 @@ class SpecgramMaker:
 
             # if the spectrogram is showing the viewable amount of seconds
             # we begin to shift out the start of the spectrogram.
-            if x >= viewable:
-                del a_data[0:(micrecorder.rate*samplespan)]
+            if timerecorded >= viewable:
+                # Shifts out the amount of samples recorded each time.
+                del a_data[0:(micrecorder.rate * sample_length)]
 
             # converting a ndarray to an array/list otherwise we cant extend it to a_data.
-            # so adding the newly read sound.
+            # Then adding the newly read sound.
             a_data.extend(data.ravel())
 
             # making the spectrogram, see doc for return values.
@@ -168,9 +169,9 @@ class SpecgramMaker:
             self._finish_plot(axes, xlim, ylim, fontsize, pic,
                               fig, make_cbar, grid, onlyspecgram)
 
-            self._save_and_close_fig(outputpath, filename, fig, onlyspecgram, str(x))
+            self._save_and_close_fig(outputpath, filename, fig, onlyspecgram, str(timerecorded))
 
-            x += samplespan
+            timerecorded += sample_length
 
         t1 = time.time()
 
@@ -198,3 +199,7 @@ class SpecgramMaker:
                                             cmap_name, make_cbar,
                                             grid, ylim, xlim, figx, figy,
                                             fontsize, onlyspecgram)
+
+if __name__ == "__main__":
+    sm = SpecgramMaker()
+    sm.make_specgram_from_mic("C:\\Users\\Jacob\\Desktop\\MIData\\", "test", 10, 30, 5)
