@@ -51,61 +51,37 @@ def cut_to_size(list, length):
 
 
 if __name__ == "__main__":
+    nb_model = GaussianNB()
 
-    waves, labels = get_training_data("C:\\Users\\Magnus\\Desktop\\University\\5semester\\FirstHalf\\", max_freq=40,
-                                      training=True, split=True, min_freq=14)
-    lr_model = LogisticRegression()
-    tree_model = tree.DecisionTreeClassifier()
+    waves, labels = get_training_data("Wav\\", max_freq=40,
+                                      training=True, split=True, min_freq=14, divisions=6)
 
     print("Begin cutting")
     waves = cut(waves)
 
     print("Begin fitting")
-    lr_model.fit(waves, labels)
-    tree_model.fit(waves, labels)
+    nb_model.fit(waves, labels)
 
-    # pickle.dump(lr_model, open("mi_files\\James.pkl", "wb"))
-
-    # lr_model = pickle.load(open("mi_files\\James.pkl", "rb"))
-
-    verify_data, actual_labels = get_training_data("C:\\Users\\Magnus\\Desktop\\University\\5semester\\RealLife\\",
-                                                   max_freq=40, training=False, split=True, min_freq=14)
+    print("Begin Get verify data")
+    verify_data, actual_labels = get_training_data("C:\\Users\Magnus\\Desktop\\University\\5semester\\UCN\\",
+                                                   max_freq=40, training=False, split=True, min_freq=14, divisions=6)
 
     print("Cut verify data")
-    verify_data = cut_to_size(verify_data, _find_smallest_length(verify_data))
+    verify_data = cut_to_size(verify_data, _find_smallest_length(waves))
 
-    lr_predictions = lr_model.predict(verify_data)
-    tree_predictions = tree_model.predict(verify_data)
+    predictions = nb_model.predict(verify_data)
 
-    true_positive, false_positive, true_negative, false_negative = 0, 0, 0, 0
-
-    print("begin calculate accuracy", "lr")
-    for i in range(len(lr_predictions)):
-        if lr_predictions[i] and actual_labels[i]:
-            true_positive += 1
-        elif lr_predictions[i] and not actual_labels[i]:
-            false_positive += 1
-        elif not lr_predictions[i] and actual_labels[i]:
-            false_negative += 1
+    tp, fp, fn, tn = 0, 0, 0, 0
+    for j in range(len(predictions)):
+        answer, actual_value = predictions[j], actual_labels[j]
+        if answer and actual_value:
+            tp += 1
+        elif answer and not actual_value:
+            fp += 1
+        elif not answer and actual_value:
+            fn += 1
         else:
-            true_negative += 1
+            tn += 1
 
-    print("true positive", true_positive, "true negative", true_negative, "false positive", false_positive,
-          "false negative", false_negative)
-
-    true_positive, false_positive, true_negative, false_negative = 0, 0, 0, 0
-    
-    print("tree")
-    for i in range(len(tree_predictions)):
-        if tree_predictions[i] and actual_labels[i]:
-            true_positive += 1
-        elif tree_predictions[i] and not actual_labels[i]:
-            false_positive += 1
-        elif not tree_predictions[i] and actual_labels[i]:
-            false_negative += 1
-        else:
-            true_negative += 1
-    print("true positive", true_positive, "true negative", true_negative, "false positive", false_positive,
-          "false negative", false_negative)
-
+    print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
 

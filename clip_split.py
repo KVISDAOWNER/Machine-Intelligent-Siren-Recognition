@@ -68,17 +68,19 @@ def _split_training(files_frequencies_array, labels, file_names, times, division
         # Assuming labels and files_frequencies_array are of equal length
         if labels[i]:
             # If the i'th clip has a siren at some point
+
             siren_start = int(file_names[i].split("_")[3])
             # The file names say when the sirens start. One filename could be Sample_2_sirenAt_13_Dogs_WWIISiren
             # which would mean that the sirens start at the 13th second.
 
-            for j in range(int(-15.0 / seconds_per_division), int(20 / seconds_per_division)):
+            for j in range(int(len(files_frequencies_array) / divisions)):
                 # The idea is to find as many sub-clips in files_frequencies_array[i] as possible. To do this, we have
                 # to find out how many 5-second clips we can extract out of the 20 second clip. We only want clips that
                 # are 100 % sirens or 0 % sirens.
-                new_start = j * seconds_per_division + siren_start
-                # new_start is a potential starting second for a sub-clip.
-                if 0 <= new_start <= 20 - seconds_per_division:
+                new_start = j * seconds_per_division
+                if new_start <= 20 - seconds_per_division and new_start + seconds_per_division <= 20:
+                    # new_start is a potential starting second for a sub-clip.
+
                     # If new_start < 0 or new_start > 15, we skip it, because we only want 5-second clips.
                     # Otherwise, we append a new clip to split_waves. The new clip is a five second clip between
                     # new_start and new_start + 5.
@@ -86,7 +88,7 @@ def _split_training(files_frequencies_array, labels, file_names, times, division
                                                             seconds_per_division, times[i]))
                     # Then we append the new_labels with whether or not the siren has begun yet, or in other words,
                     # whether the siren start is earlier than new_start
-                    new_labels.append(new_start >= siren_start)
+                    new_labels.append(new_start + seconds_per_division >= siren_start)
         else:
             # If the clip does not have a siren in it at all, we split the 20-second clip into four 5-second clips
             for j in range(divisions):
@@ -98,13 +100,13 @@ def _split_training(files_frequencies_array, labels, file_names, times, division
     return split_waves, new_labels
 
 
-def split_testing(files_frequencies_array, labels, file_names, times, divisions=4):
+def split_testing(files_frequencies_array, labels, file_names, times, seconds_per_division=3.3333333335):
     split_waves = []
     new_labels = []
-    seconds_per_division = 20.0 / float(divisions)
+
     for i in range(len(labels)):
         # Assuming labels and files_frequencies_array are of equal length
-        for j in range(divisions):
+        for j in range(int(len(files_frequencies_array) / seconds_per_division)):
             split_waves.append(_find_subset_of_clip(files_frequencies_array[i], seconds_per_division * j,
                                                     seconds_per_division * j + seconds_per_division, times[i]))
             if "sirenAt" in file_names[i]:
@@ -114,8 +116,7 @@ def split_testing(files_frequencies_array, labels, file_names, times, divisions=
                 new_labels.append(True)
             else:
                 new_labels.append(False)
-    # split_waves are the frequencies split into 5-second clips.
-    # new_labels are the labels of the 5-second clips. The two lists should have equal length.
+
     return split_waves, new_labels
 
 
