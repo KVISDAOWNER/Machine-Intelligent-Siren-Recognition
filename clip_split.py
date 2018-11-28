@@ -56,6 +56,7 @@ def _find_subset_of_clip(clip, start, end, time):
         # if we cross the timestamp given by end, we set index_two to i
         if (t >= end) and (index_two == -1):
             index_two = i
+            break
     # finally, we can return the part of the array that is between the indices of index_one and index_two
     return clip[index_one:index_two]
 
@@ -73,7 +74,7 @@ def _split_training(files_frequencies_array, labels, file_names, times, division
             # The file names say when the sirens start. One filename could be Sample_2_sirenAt_13_Dogs_WWIISiren
             # which would mean that the sirens start at the 13th second.
 
-            for j in range(int(len(files_frequencies_array) / divisions)):
+            for j in range(divisions):
                 # The idea is to find as many sub-clips in files_frequencies_array[i] as possible. To do this, we have
                 # to find out how many 5-second clips we can extract out of the 20 second clip. We only want clips that
                 # are 100 % sirens or 0 % sirens.

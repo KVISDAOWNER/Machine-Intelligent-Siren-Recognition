@@ -15,6 +15,8 @@ class SpecgramMaker:
         sample_rate, data = wavefile.read(pathtofile+filename)
 
         # making spectrogram using mlab, and thereby only generating the data corresponding to the specgram.
+        if data.shape.__len__()==2:
+            data = data[:,0]
         spectro, freq, t, = specgram(data, Fs=sample_rate, NFFT=math.ceil(sample_rate / resolution))
 
         return spectro, freq, t
@@ -65,6 +67,20 @@ class SpecgramMaker:
     def _save_and_close_fig(self, outputpath, wav_file_name, fig, onlyspecgram, optional=""):
         # Removes the .wav in the end of the wav file's name
         filename = wav_file_name[::-1].split("vaw.", 1)[1][::-1]
+        # saves the file in this folder.
+        if onlyspecgram:
+            plt.savefig(outputpath + filename + optional + ".png",
+                        bbox_inches="tight", pad_inches=-0.1)
+        else:
+            plt.savefig(outputpath + filename + optional + ".png")
+
+        # This clears the memory used by the figure.
+        # Otherwise memory usage becomes too high if this function is called inside a loop.
+        plt.close(fig)
+
+    def _save_and_close_fig1(self, outputpath,filename, fig, onlyspecgram, optional=""):
+        # Removes the .wav in the end of the wav file's name
+        #filename = wav_file_name[::-1].split("vaw.", 1)[1][::-1]
         # saves the file in this folder.
         if onlyspecgram:
             plt.savefig(outputpath + filename + optional + ".png",
@@ -181,7 +197,7 @@ class SpecgramMaker:
             self._finish_plot(axes, xlim, ylim, fontsize, pic,
                               fig, make_cbar, grid, onlyspecgram)
 
-            self._save_and_close_fig(outputpath, filename, fig, onlyspecgram, str(timerecorded))
+            self._save_and_close_fig1(outputpath, filename, fig, onlyspecgram, str(timerecorded))
 
             timerecorded += sample_length
 
