@@ -11,7 +11,7 @@ from support_vector_machine2 import cut, get_training_data, cut_to_size, _find_s
 
 def printing_confusing_matrix_of_models(split=True):
     nb_model = GaussianNB()
-    waves, labels = get_training_data("C:\\Users\\Jacob\\Desktop\\MIData\\training_data\\", max_freq=40,
+    waves, labels = get_training_data("Wav\\", max_freq=40,
                                       training=True, split=split, min_freq=14, divisions=6)
     print("Begin cutting")
     waves = cut(waves)
@@ -19,10 +19,9 @@ def printing_confusing_matrix_of_models(split=True):
     nb_model.fit(waves, labels)
 
     print("Begin Get verify data")
-    verify_data, actual_labels = get_training_data("C:\\Users\\Jacob\\Desktop\\MIData\\testclean\\",
+    verify_data, actual_labels = get_training_data("Wav\\",
                                                    max_freq=40, training=False, split=split, min_freq=14, divisions=6)
     print("Cut verify data")
-
     verify_data = cut_to_size(verify_data, _find_smallest_length(waves))
 
     print("predicting")

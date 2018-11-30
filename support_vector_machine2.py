@@ -9,6 +9,7 @@ import specgram_maker as SM
 from sklearn.naive_bayes import GaussianNB
 from sklearn import linear_model
 from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 import clip_split as ClipSplit
 import pickle
 
@@ -52,19 +53,26 @@ def cut_to_size(list, length):
 
 if __name__ == "__main__":
     nb_model = GaussianNB()
+    tree_model = tree.DecisionTreeClassifier()
+    ran_model = RandomForestClassifier()
+    svm_model = svm.SVC()
+    lr_model = LogisticRegression()
+    models = [[nb_model, "nb"], [tree_model, "tree"], [ran_model, "randomForest"], [svm_model, "svm"], [lr_model, "lr"]]
 
-    waves, labels = get_training_data("Wav\\", max_freq=40,
+    waves, labels = get_training_data("Wav\\", max_freq=32,
                                       training=True, split=True, min_freq=14, divisions=6)
 
     print("Begin cutting")
     waves = cut(waves)
 
     print("Begin fitting")
-    nb_model.fit(waves, labels)
+    for i in range(len(models)):
+        models[i][0].fit(waves, labels)
+        pickle.dump(models[i][0], open("James" + models[i][1] + ".pkl", "wb"))
 
     print("Begin Get verify data")
     verify_data, actual_labels = get_training_data("C:\\Users\Magnus\\Desktop\\University\\5semester\\UCN\\",
-                                                   max_freq=40, training=False, split=True, min_freq=14, divisions=6)
+                                                   max_freq=32, training=False, split=True, min_freq=14, divisions=6)
 
     print("Cut verify data")
     verify_data = cut_to_size(verify_data, _find_smallest_length(waves))

@@ -2,11 +2,28 @@ import specgram_maker as sm
 import os
 
 
-# This method turns them into matrices that correspond to the spectrogram made
-# in SpecgramMaker.
+# This method turns .wav-files into matrices that correspond to the spectrograms made in specmaker. It also splits the
+# matrices into roughly equal sized bits.
 # Parameters:
-# Path
-def extract(path, max_freq=442, training=True, split=True, divisions=4, min_freq=0):
+# path(string):         The path to the folder that contains the .wav-files to be converted to matrices.
+# max_freq (number):    The maximum frequency (in Hz) that is considered relevant for vertical maxima. Only the highest
+#                       frequency less than or equal to max_freq will be included.
+# min_freq (number):    The minimum frequency (in Hz) that is considered relevant for vertical maxima. Only the highest
+#                       frequency greater than or equal to max_freq will be included.
+# training (bool):      Should be true if the matrices are used for training and should be false otherwise. It changes
+#                       which method is called in the end.
+# split (bool):         True if the clips should be split and false otherwise.
+# divisions (number):   The number of clips that the original clips should be split into. Cannot be 0. split=1
+#                       corresponds to split=false
+#
+# Returns:
+# split_waves (list of list of numbers):    One list of the highest frequencies for each file for each division.
+# time (list of numbers):                   A list that ties the index in the split_waves list to actual time in
+#                                           seconds.
+# labels (list of bool):                    index i is True iff the i'th clip contains a siren.
+#
+# split_waves, time and labels have the same length
+def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_freq=750):
     specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
     time = []
@@ -15,108 +32,149 @@ def extract(path, max_freq=442, training=True, split=True, divisions=4, min_freq
     labels = []
 
     for filename in directory:
+        # We only consider .wav-files
         if not filename.endswith(".wav"):
             continue
 
+        # We append whether or not the filename says there is a siren in the clip. There have been many ways to
+        # indicate this, so this line is kind of long. :(
         labels.append("sirenAt" in filename or "siren" in filename or "SPCSiren" in filename)
 
+        # We convert the .wav-file into a matrix with specmaker.
         spec, freq, t = specmaker.get_specgram_data_from_wav(path, filename)
-        for col in range(len(spec[1])):  # iterating over coloums.
+
+        # For each column:
+        for col in range(len(spec[1])):
             max_dB = 0
             max_row = 0
-            for row in range(min_freq, max_freq):  # Finding the row with highest frequency.
+            # For each row:
+            for row in range(int(min_freq / 50), int(max_freq / 50)):   # We divide with 50, because the frequencies
+                                                                        # are in multiples of 50.
+                # We find the highest value in the column.
                 if spec[row][col] > max_dB:
                     max_dB = spec[row][col]
                     max_row = row
+            # When we have found the highest column, we append that number times 50.
+            # This is because the y-axis works in multiples of 50.
             rows.append(50 * max_row)
+        # files_frequencies_array now contains rows, which is a list of the highest values in each column.
+        # I'm not sure, why the rows are copied and then cleared.
         files_frequencies_array.append(rows.copy())
         rows.clear()
+        # We would like to keep track of the times for future use.
         time.append(t)
+        # Here we print, to keep track of how long we are in importing.
         print("Done importing " + filename + ".", labels[len(time) - 1], str(len(time) * 100 / len(directory)) + " %")
+    # This is where we split,, if split is true
     if split:
+        # We call different methods dependant on whether it is used for training or not.
         if training:
             split_waves, labels = _split_training(files_frequencies_array, labels, directory, time, divisions)
         else:
-            split_waves, labels = split_testing(files_frequencies_array, labels, directory, time, divisions)
+            split_waves, labels = _split_testing(files_frequencies_array, labels, directory, time, divisions)
+    # If we don't split, we simply copy it into split_waves.
     else:
         split_waves = files_frequencies_array
 
     return split_waves, time, labels
 
 
+# Finds and returns a sub-clip of a given sound clip between start-time and end-time.
+# Parameters:
+# clip (list of numbers):   A clip that has been extracted by the extract method.
+# start (number):           The second where the sub clip begins.
+# end (number):             The second where the sub clip ends.
+# time (list numbers):      translates from indices to real time.
+#
+# Returns (list of numbers): The sub clip of clip that runs between start and end.
 def _find_subset_of_clip(clip, start, end, time):
     index_one = -1
     index_two = -1
-    # index_one and index_two show on which index the clip begins and on which index the clip ends
     for i in range(len(time)):
         t = time[i]
-        # if we cross the timestamp given by start, we set index_one to i
         if (t >= start) and (index_one == -1):
+            # The first time we see a time that is greater than start, we set the index.
             index_one = i
-        # if we cross the timestamp given by end, we set index_two to i
         if (t >= end) and (index_two == -1):
+            # The first time we see a time that is greater than end, we set the index.
             index_two = i
             break
-    # finally, we can return the part of the array that is between the indices of index_one and index_two
+            # Assuming that end > start, we can break out of the for loop at this point.
+    # When we are done, we can return the clip between the two indices.
     return clip[index_one:index_two]
 
 
+# Splits lists of lists of training data into smaller divisions.
+# Parameters:
+# files_frequencies_array (list of lists of numbers):   The extracted vertical maxima arrays.
+# labels (list of bool):                                Shows which arrays are sirens and which are not.
+# file_names (list of strings):                         The file_names which could say whether or not there is a siren.
+# times (list of numbers):                              A list of times corresponding to an array entry.
+# divisions (number):                                   Number of divisions to split into. Cannot be 0.
+# files_frequencies_array, labels, file_names have equal length.
+#
+# Returns:
+# split_waves (list of lists of numbers):   files_frequencies_array but split into sub-clips.
+# new_labels (list of bool):                entry i is true iff split_waves[i] contains a siren.
 def _split_training(files_frequencies_array, labels, file_names, times, divisions=4):
     split_waves = []
     new_labels = []
-    seconds_per_division = 20.0 / float(divisions)
+    seconds_per_division = times[0][-1] / float(divisions)
     for i in range(len(labels)):
-        # Assuming labels and files_frequencies_array are of equal length
+        # If the i'th clip contains a siren.
         if labels[i]:
-            # If the i'th clip has a siren at some point
-
             siren_start = int(file_names[i].split("_")[3])
-            # The file names say when the sirens start. One filename could be Sample_2_sirenAt_13_Dogs_WWIISiren
-            # which would mean that the sirens start at the 13th second.
-
+            # Due to the naming scheme of the training data, we know that this number is the second at which the siren
+            # starts.
             for j in range(divisions):
-                # The idea is to find as many sub-clips in files_frequencies_array[i] as possible. To do this, we have
-                # to find out how many 5-second clips we can extract out of the 20 second clip. We only want clips that
-                # are 100 % sirens or 0 % sirens.
+                # For each wanted sub-clip:
                 new_start = j * seconds_per_division
-                if new_start <= 20 - seconds_per_division and new_start + seconds_per_division <= 20:
-                    # new_start is a potential starting second for a sub-clip.
+                # If there is room for another split:
+                t = times[0][-1]
+                if new_start <= t - seconds_per_division:
+                    # We find a sub-clip starting at new_start that lasts for seconds_per_division seconds.
+                    split_waves.append(_find_subset_of_clip(files_frequencies_array[i], new_start,
+                                                            new_start + seconds_per_division, times[i]))
 
-                    # If new_start < 0 or new_start > 15, we skip it, because we only want 5-second clips.
-                    # Otherwise, we append a new clip to split_waves. The new clip is a five second clip between
-                    # new_start and new_start + 5.
-                    split_waves.append(_find_subset_of_clip(files_frequencies_array[i], new_start, new_start +
-                                                            seconds_per_division, times[i]))
-                    # Then we append the new_labels with whether or not the siren has begun yet, or in other words,
-                    # whether the siren start is earlier than new_start
+                    # In new_labels, we add whether or not the siren has begun before the end of the clip.
                     new_labels.append(new_start + seconds_per_division >= siren_start)
-        else:
-            # If the clip does not have a siren in it at all, we split the 20-second clip into four 5-second clips
+        else:  # If the i'th clip does not contain a siren:
+            # We split the clip into divisions, and mark that there is not a siren.
             for j in range(divisions):
                 split_waves.append(_find_subset_of_clip(files_frequencies_array[i], seconds_per_division * j,
                                                         seconds_per_division * j + seconds_per_division, times[i]))
                 new_labels.append(False)
-    # split_waves are the frequencies split into 5-second clips.
-    # new_labels are the labels of the 5-second clips. The two lists should have equal length.
     return split_waves, new_labels
 
 
-def split_testing(files_frequencies_array, labels, file_names, times, seconds_per_division=3.3333333335):
+# Splits lists of lists of test data into smaller divisions. When testing, we are not allowed to split differently based
+# on whether or not there is a siren.
+# Parameters: Copy-paste from _split_training
+# files_frequencies_array (list of lists of numbers):   The extracted vertical maxima arrays.
+# labels (list of bool):                                Shows which arrays are sirens and which are not.
+# file_names (list of strings):                         The file_names which could say whether or not there is a siren.
+# times (list of numbers):                              A list of times corresponding to an array entry.
+# divisions (number):                                   Number of divisions to split into. Cannot be 0.
+# files_frequencies_array, labels, file_names have equal length.
+#
+# Returns:
+# split_waves (list of lists of numbers):   files_frequencies_array but split into sub-clips.
+# new_labels (list of bool):                entry i is true iff split_waves[i] contains a siren. They are used for the
+#                                           confusion matrix.
+def _split_testing(files_frequencies_array, labels, file_names, times, divisions=4):
     split_waves = []
     new_labels = []
 
     for i in range(len(labels)):
-        # Assuming labels and files_frequencies_array are of equal length
-        for j in range(int(len(files_frequencies_array) / seconds_per_division)):
+        seconds_per_division = times[i][-1] / divisions
+        for j in range(divisions):
             split_waves.append(_find_subset_of_clip(files_frequencies_array[i], seconds_per_division * j,
                                                     seconds_per_division * j + seconds_per_division, times[i]))
             if "sirenAt" in file_names[i]:
                 siren_times = int(file_names[i].split('_')[3])
                 new_labels.append(siren_times - seconds_per_division < seconds_per_division * j)
-            elif labels[i]:
-                new_labels.append(True)
             else:
-                new_labels.append(False)
+                new_labels.append(labels[i])
 
     return split_waves, new_labels
 
