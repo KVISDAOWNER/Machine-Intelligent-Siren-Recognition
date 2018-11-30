@@ -166,13 +166,18 @@ def _split_testing(files_frequencies_array, labels, file_names, times, divisions
     new_labels = []
 
     for i in range(len(labels)):
+        # We calculate the number of seconds for each division based on the length of the i'th clip, and the number of
+        # divisions
         seconds_per_division = times[i][-1] / divisions
         for j in range(divisions):
             split_waves.append(_find_subset_of_clip(files_frequencies_array[i], seconds_per_division * j,
                                                     seconds_per_division * j + seconds_per_division, times[i]))
+            # If we know where the sirens begin in the sub-clip, we can make new_labels more correct, since we can
+            # append True if the siren's start time is before the end of the sub-clip, and False otherwise
             if "sirenAt" in file_names[i]:
                 siren_times = int(file_names[i].split('_')[3])
                 new_labels.append(siren_times - seconds_per_division < seconds_per_division * j)
+            # If we don't know, we can just append whatever was in the old labels.
             else:
                 new_labels.append(labels[i])
 
