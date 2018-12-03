@@ -7,25 +7,34 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 from support_vector_machine2 import cut, get_training_data, cut_to_size, _find_smallest_length
+from memory_profiler import profile
 
 
-def printing_confusing_matrix_of_models(split=True):
-    nb_model = GaussianNB()
-    waves, labels = get_training_data("Wav\\", max_freq=40,
-                                      training=True, split=split, min_freq=14, divisions=6)
+def printing_confusing_matrix_of_models(trainingpath, testpath, split=True):
+    gau_model = GaussianNB()
+    svm_model = svmm.SVC()
+    ran_model = RandomForestClassifier()
+    lr_model = LogisticRegression()
+    tree_model = DecisionTreeClassifier()
+    waves, labels = get_training_data(trainingpath, max_freq=40*50, training=True,
+                                      split=split, min_freq=14*50, divisions=6)
     print("Begin cutting")
     waves = cut(waves)
 
-    nb_model.fit(waves, labels)
+    gau_model.fit(waves, labels)
+    svm_model.fit(waves, labels)
+    ran_model.fit(waves, labels)
+    lr_model.fit(waves, labels)
+    tree_model.fit(waves, labels)
 
     print("Begin Get verify data")
-    verify_data, actual_labels = get_training_data("Wav\\",
-                                                   max_freq=40, training=False, split=split, min_freq=14, divisions=6)
+    verify_data, actual_labels = get_training_data(testpath, max_freq=40*50, training=False,
+                                                   split=split, min_freq=14*50, divisions=6)
     print("Cut verify data")
     verify_data = cut_to_size(verify_data, _find_smallest_length(waves))
 
     print("predicting")
-    predictions = nb_model.predict(verify_data)
+    predictions = gau_model.predict(verify_data)
 
     tp, fp, fn, tn = 0, 0, 0, 0
     for j in range(len(predictions)):
@@ -39,6 +48,74 @@ def printing_confusing_matrix_of_models(split=True):
         else:
             tn += 1
     print("Confusing Matrix for: Naive Bayes: ")
+    print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
+
+    print("predicting")
+    predictions = svm_model.predict(verify_data)
+
+    tp, fp, fn, tn = 0, 0, 0, 0
+    for j in range(len(predictions)):
+        answer, actual_value = predictions[j], actual_labels[j]
+        if answer and actual_value:
+            tp += 1
+        elif answer and not actual_value:
+            fp += 1
+        elif not answer and actual_value:
+            fn += 1
+        else:
+            tn += 1
+    print("Confusing Matrix for: SVM: ")
+    print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
+
+    print("predicting")
+    predictions = ran_model.predict(verify_data)
+
+    tp, fp, fn, tn = 0, 0, 0, 0
+    for j in range(len(predictions)):
+        answer, actual_value = predictions[j], actual_labels[j]
+        if answer and actual_value:
+            tp += 1
+        elif answer and not actual_value:
+            fp += 1
+        elif not answer and actual_value:
+            fn += 1
+        else:
+            tn += 1
+    print("Confusing Matrix for: Random Forest: ")
+    print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
+
+    print("predicting")
+    predictions = lr_model.predict(verify_data)
+
+    tp, fp, fn, tn = 0, 0, 0, 0
+    for j in range(len(predictions)):
+        answer, actual_value = predictions[j], actual_labels[j]
+        if answer and actual_value:
+            tp += 1
+        elif answer and not actual_value:
+            fp += 1
+        elif not answer and actual_value:
+            fn += 1
+        else:
+            tn += 1
+    print("Confusing Matrix for: Logistic Regression: ")
+    print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
+
+    print("predicting")
+    predictions = tree_model.predict(verify_data)
+
+    tp, fp, fn, tn = 0, 0, 0, 0
+    for j in range(len(predictions)):
+        answer, actual_value = predictions[j], actual_labels[j]
+        if answer and actual_value:
+            tp += 1
+        elif answer and not actual_value:
+            fp += 1
+        elif not answer and actual_value:
+            fn += 1
+        else:
+            tn += 1
+    print("Confusing Matrix for: Decision Tree: ")
     print("true positive", tp, "true negative", tn, "false positive", fp, "false negative", fn)
 
 
@@ -184,5 +261,42 @@ def printing_size_of_models_with_nosplit():
           + "\n")
 
 
+@profile
+def printing_RAM_usage_of_predicts():
+    gau_model = GaussianNB()
+    svm_model = svmm.SVC()
+    ran_model = RandomForestClassifier()
+    lr_model = LogisticRegression()
+    tree_model = DecisionTreeClassifier()
+    waves, labels = get_training_data("C:\\Users\\Jacob\\Desktop\\MIData\\training_data\\", max_freq=40 * 50,
+                                      training=True, split=True, min_freq=14 * 50, divisions=6)
+    print("Begin cutting")
+    waves = cut(waves)
+
+    gau_model.fit(waves, labels)
+    svm_model.fit(waves, labels)
+    ran_model.fit(waves, labels)
+    lr_model.fit(waves, labels)
+    tree_model.fit(waves, labels)
+
+    print("Begin Get verify data")
+    verify_data, actual_labels = get_training_data("C:\\Users\\Jacob\\Desktop\\MIData\\test_data\\",
+                                                   max_freq=40 * 50, training=False, split=True, min_freq=14 * 50,
+                                                   divisions=6)
+    print("Cut verify data")
+    verify_data = cut_to_size(verify_data, _find_smallest_length(waves))
+
+    print("predicting")
+    gau_model.predict(verify_data)
+    svm_model.predict(verify_data)
+    ran_model.predict(verify_data)
+    lr_model.predict(verify_data)
+    tree_model.predict(verify_data)
+
+
 if __name__ == "__main__":
-    printing_confusing_matrix_of_models(split=True)
+    printing_confusing_matrix_of_models("C:\\Users\\Jacob\\Desktop\\MIData\\training_data\\",
+                                        "C:\\Users\\Jacob\\Desktop\\MIData\\testclean\\",
+                                        split=True)
+
+

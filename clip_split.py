@@ -26,6 +26,7 @@ import os
 def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_freq=750):
     specmaker = sm.SpecgramMaker()
     directory = os.listdir(path)
+    filenames = []
     time = []
     rows = []
     files_frequencies_array = []
@@ -35,7 +36,7 @@ def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_fre
         # We only consider .wav-files
         if not filename.endswith(".wav"):
             continue
-
+        filenames.append(filename)
         # We append whether or not the filename says there is a siren in the clip. There have been many ways to
         # indicate this, so this line is kind of long. :(
         labels.append("sirenAt" in filename or "siren" in filename or "SPCSiren" in filename)
@@ -69,9 +70,9 @@ def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_fre
     if split:
         # We call different methods dependant on whether it is used for training or not.
         if training:
-            split_waves, labels = _split_training(files_frequencies_array, labels, directory, time, divisions)
+            split_waves, labels = _split_training(files_frequencies_array, labels, filenames, time, divisions)
         else:
-            split_waves, labels = _split_testing(files_frequencies_array, labels, directory, time, divisions)
+            split_waves, labels = _split_testing(files_frequencies_array, labels, filenames, time, divisions)
     # If we don't split, we simply copy it into split_waves.
     else:
         split_waves = files_frequencies_array
