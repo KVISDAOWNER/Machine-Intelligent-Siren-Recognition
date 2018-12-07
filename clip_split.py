@@ -1,6 +1,8 @@
 import specgram_maker as sm
 import os
 
+features = -1
+
 
 # This method turns .wav-files into matrices that correspond to the spectrograms made in specmaker. It also splits the
 # matrices into roughly equal sized bits.
@@ -23,14 +25,41 @@ import os
 # labels (list of bool):                    index i is True iff the i'th clip contains a siren.
 #
 # split_waves, time and labels have the same length
-def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_freq=750):
+def extract(training_path, testing_path, max_freq=1600, min_freq=750, split=True, divisions=4):
+    training_directory = os.listdir(training_path)
+    testing_directory = os.listdir(testing_path)
+
+    training_data, training_labels, training_time = _find_vertical_maxima(training_path, training_directory, min_freq,
+                                                                          max_freq, split=split, training=True)
+    testing_data, testing_labels, testing_time = _find_vertical_maxima(testing_path, testing_directory, min_freq,
+                                                                       max_freq, split=split, training=False)
+
+    # This is where we split, if split is true
+    if split:
+        # We call different methods dependant on whether it is used for training or not.
+        training_split_waves, training_labels = _split_training(training_data, training_labels, training_directory,
+                                                                training_time, divisions)
+
+        testing_split_waves, testing_labels = _split_testing(testing_data, testing_labels, testing_directory,
+                                                             testing_time, seconds_per_division=(20 / divisions))
+    # If we don't split, we simply copy it into split_waves.
+    else:
+        training_split_waves = training_data
+        testing_split_waves = testing_data
+
+    training_split_waves, testing_split_waves = cut(training_split_waves, testing_split_waves)
+    return training_split_waves, training_time, training_labels, testing_split_waves, testing_time, testing_labels
+
+
+# A helping method for finding the vertical maxima in a given directory of .wav-files
+def _find_vertical_maxima(path, directory, min_freq=750, max_freq=1600, split=True, training=True):
     specmaker = sm.SpecgramMaker()
+    labels = []
     directory = os.listdir(path)
     filenames = []
     time = []
     rows = []
     files_frequencies_array = []
-    labels = []
 
     for filename in directory:
         # We only consider .wav-files
@@ -77,7 +106,7 @@ def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_fre
     else:
         split_waves = files_frequencies_array
 
-    new_waves  = []
+    new_waves = []
     for feature_set in split_waves:
         new_feature_set = []
         for tubel_element in feature_set:
@@ -128,19 +157,23 @@ def _find_subset_of_clip(clip, start, end, time):
 def _split_training(files_frequencies_array, labels, file_names, times, divisions=4):
     split_waves = []
     new_labels = []
-    seconds_per_division = times[0][-1] / float(divisions)
+    latest_siren_start = 15
+    t_max = 20
+
     for i in range(len(labels)):
+        seconds_per_division = times[i][-1] / float(divisions)
         # If the i'th clip contains a siren.
         if labels[i]:
+
             siren_start = int(file_names[i].split("_")[3])
             # Due to the naming scheme of the training data, we know that this number is the second at which the siren
             # starts.
-            for j in range(divisions):
+            for j in range(int(-latest_siren_start / seconds_per_division), divisions + 1):
                 # For each wanted sub-clip:
-                new_start = j * seconds_per_division
-                # If there is room for another split:
-                t = times[0][-1]
-                if new_start <= t - seconds_per_division:
+                new_start = siren_start + j * seconds_per_division
+
+                # If new_start is within range that it can make a full sub-clip:
+                if 0 <= new_start <= t_max - seconds_per_division:
                     # We find a sub-clip starting at new_start that lasts for seconds_per_division seconds.
                     split_waves.append(_find_subset_of_clip(files_frequencies_array[i], new_start,
                                                             new_start + seconds_per_division, times[i]))
@@ -163,21 +196,21 @@ def _split_training(files_frequencies_array, labels, file_names, times, division
 # labels (list of bool):                                Shows which arrays are sirens and which are not.
 # file_names (list of strings):                         The file_names which could say whether or not there is a siren.
 # times (list of numbers):                              A list of times corresponding to an array entry.
-# divisions (number):                                   Number of divisions to split into. Cannot be 0.
+# seconds_per_division (float):                         Number of seconds for the clips to be split into. Cannot be 0.
 # files_frequencies_array, labels, file_names have equal length.
 #
 # Returns:
 # split_waves (list of lists of numbers):   files_frequencies_array but split into sub-clips.
 # new_labels (list of bool):                entry i is true iff split_waves[i] contains a siren. They are used for the
 #                                           confusion matrix.
-def _split_testing(files_frequencies_array, labels, file_names, times, divisions=4):
+def _split_testing(files_frequencies_array, labels, file_names, times, seconds_per_division=5.0):
     split_waves = []
     new_labels = []
 
     for i in range(len(labels)):
         # We calculate the number of seconds for each division based on the length of the i'th clip, and the number of
         # divisions
-        seconds_per_division = times[i][-1] / divisions
+        divisions = int(times[i][-1] / float(seconds_per_division))
         for j in range(divisions):
             split_waves.append(_find_subset_of_clip(files_frequencies_array[i], seconds_per_division * j,
                                                     seconds_per_division * j + seconds_per_division, times[i]))
@@ -193,4 +226,42 @@ def _split_testing(files_frequencies_array, labels, file_names, times, divisions
     return split_waves, new_labels
 
 
+def _find_smallest_length(training_data, testing_data):
+    smallest_length = len(training_data[0])
+    for i in range(len(training_data)):
+        if len(training_data[i]) < smallest_length:
+            smallest_length = len(training_data[i])
+    for i in range(len(testing_data)):
+        if len(testing_data[i]) < smallest_length:
+            smallest_length = len(testing_data[i])
+    return smallest_length
 
+
+def cut(training_data, testing_data):
+    smallest_length = _find_smallest_length(training_data, testing_data)
+    resulting_training_data = []
+    resulting_testing_data = []
+
+    for i in range(len(training_data)):
+        ls = []
+        for j in range(smallest_length):
+            ls.append(training_data[i][j])
+        resulting_training_data.append(ls)
+
+    for i in range(len(testing_data)):
+        ls = []
+        for j in range(smallest_length):
+            ls.append(testing_data[i][j])
+        resulting_testing_data.append(ls)
+
+    return resulting_training_data, resulting_testing_data
+
+
+def cut_to_size(input_list, length):
+    result = []
+    for i in range(len(input_list)):
+        ls = []
+        for j in range(length):
+            ls.append(input_list[i][j])
+        result.append(ls)
+    return result

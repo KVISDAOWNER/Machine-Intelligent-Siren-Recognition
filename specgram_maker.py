@@ -230,4 +230,4 @@ class SpecgramMaker:
 
 if __name__ == "__main__":
     sm = SpecgramMaker()
-    sm.make_specgram_from_mic("C:\\Users\\Jacob\\Desktop\\MIData\\", "test", 10, 30, 5)
+    sm.make_specgram_from_mic("C:\\Users\\Magnus\\Desktop\\GetPatterns\\", "test", 10, 30, 5)

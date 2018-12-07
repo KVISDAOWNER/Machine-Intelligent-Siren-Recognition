@@ -5,40 +5,30 @@ from clip_split import cut
 class TestCut(TestCase):
     def test_cut1(self):  # fail
         # arrange
-        ls = [[1,2,3], [1,2], [1]]
-
+        trainls = [[1,2,3], [1,2], [1]]
+        testls = [[1,2,3], [1,2,3], [1,2]]
         # act
-        result = cut(ls)
+        resulttrain, resulttest = cut(trainls, testls)
 
         # assert
-        assert result == [[1], [1], [1]]
+        assert resulttrain == [[1], [1], [1]] and resulttest == [[1], [1], [1]]
 
-    def test_cut2(self):
+    def test_cut2(self):  # fail
         # arrange
-        ls = [[1, 2, 3], [1, 2], []]
-
+        trainls = [[1,2,3], [1,2], [1,2]]
+        testls = [[1,2,3], [1,2], [1]]
         # act
-        result = cut(ls)
+        resulttrain, resulttest = cut(trainls, testls)
 
         # assert
-        assert result == [[], [], []]
+        assert resulttrain == [[1], [1], [1]] and resulttest == [[1], [1], [1]]
 
     def test_cut3(self):  # fail
         # arrange
-        ls = [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
-
+        trainls = [[1,2,3], [1,2,3], [1,2,3]]
+        testls = [[1,2,3], [1,2,3], [1,2,3]]
         # act
-        result = cut(ls)
+        resulttrain, resulttest = cut(trainls, testls)
 
         # assert
-        assert result == [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
-
-    def test_cut4(self):  # fail
-        # arrange
-        ls = [[1, 2], [1, 2, 3, 4], [1, 2, 3], [1, 2, 3, 4]]
-
-        # act
-        result = cut(ls)
-
-        # assert
-        assert result == [[1, 2], [1, 2], [1, 2], [1, 2]]
+        assert resulttrain == [[1,2,3], [1,2,3], [1,2,3]] and resulttest == [[1,2,3], [1,2,3], [1,2,3]]
