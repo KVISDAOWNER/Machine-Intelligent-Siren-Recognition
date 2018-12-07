@@ -57,7 +57,7 @@ def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_fre
                     max_row = row
             # When we have found the highest column, we append that number times 50.
             # This is because the y-axis works in multiples of 50.
-            rows.append(50 * max_row)
+            rows.append([50 * max_row, max_dB])
         # files_frequencies_array now contains rows, which is a list of the highest values in each column.
         # I'm not sure, why the rows are copied and then cleared.
         files_frequencies_array.append(rows.copy())
@@ -77,7 +77,15 @@ def extract(path, max_freq=1600, training=True, split=True, divisions=4, min_fre
     else:
         split_waves = files_frequencies_array
 
-    return split_waves, time, labels
+    new_waves  = []
+    for feature_set in split_waves:
+        new_feature_set = []
+        for tubel_element in feature_set:
+            new_feature_set.append(tubel_element[0])
+            new_feature_set.append(tubel_element[1])
+        new_waves.append(new_feature_set)
+
+    return new_waves, time, labels
 
 
 # Finds and returns a sub-clip of a given sound clip between start-time and end-time.
