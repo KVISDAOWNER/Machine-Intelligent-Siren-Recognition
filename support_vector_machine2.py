@@ -51,8 +51,7 @@ if __name__ == "__main__":
     lr_model = LogisticRegression()
     models = [[nb_model, "nb"], [tree_model, "tree"], [ran_model, "randomForest"], [svm_model, "svm"], [lr_model, "lr"]]
 
-    waves, labels = get_training_data("C:\\Users\\kristoffer\\Desktop\\low_bgn_data\\", max_freq=1600,
-                                     training=True, split=True, min_freq=700, divisions=6)
+    waves, labels = get_training_data("C:\\Users\\kristoffer\\Desktop\\music2.0\\", max_freq=1600, training=True, split=True, min_freq=700, divisions=6)
 
     print("Begin cutting")
     waves = cut(waves)
@@ -61,5 +60,5 @@ if __name__ == "__main__":
     for i in range(len(models)):
         print("fitting", models[i][1])
         models[i][0].fit(waves, labels)
-        pickle.dump(models[i][0], open("James" + models[i][1] + ".v.1.pkl", "wb"))
+        pickle.dump(models[i][0], open("James" + models[i][1] + ".v.1.2.pkl", "wb"))
 

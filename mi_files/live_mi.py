@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 import winsound
 # import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 
-NUM_FEATURES = 230
+NUM_FEATURES = 386
 
 if __name__ == "__main__":
     f = open("Log.txt", "wb")
@@ -13,13 +13,13 @@ if __name__ == "__main__":
     # GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
     # GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)  # Set the light to off as default
     is_recording = True  # A boolean value that runs the while loop below.
-    # gau = pickle.load(open("Jamesnb.v.1.pkl", "rb"))
-    lr = pickle.load(open("Jameslr.v.1.pkl", "rb"))
-    ran = pickle.load(open("JamesrandomForest.v.1.pkl", "rb"))
-    # svm = pickle.load(open("Jamessvm.v.1.pkl", "rb"))
-    tree = pickle.load(open("Jamestree.v.1.pkl", "rb"))
+    gau = pickle.load(open("Jamesnb.v.1.2.pkl", "rb"))
+    lr = pickle.load(open("Jameslr.v.1.2.pkl", "rb"))
+    ran = pickle.load(open("JamesrandomForest.v.1.2.pkl", "rb"))
+    svm = pickle.load(open("Jamessvm.v.1.2.pkl", "rb"))
+    tree = pickle.load(open("Jamestree.v.1.2.pkl", "rb"))
     models = [[lr, "logistic regression"], [tree, "decision tree"],
-              [ran, "random forest"]]
+              [ran, "random forest"], [gau, "gau"], [svm, "svm"]]
     mic = MicRecorder(20/6)
     stream = mic.get_stream()
     sgm = specgram_maker.SpecgramMaker()
@@ -39,7 +39,7 @@ if __name__ == "__main__":
                     max_row = row
             rows.append(50 * max_row)
             rows.append(max_dB)
-        rows = rows[0:NUM_FEATURES*2]
+        rows = rows[0:(NUM_FEATURES)]
 
         # plot.scatter(t[0:230], rows)
         # plot.show()
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 number_of_false += 1
                 print(models[i][1], "says false...")
 
-        if number_of_true >= 2:
+        if number_of_true >= 3:
             # GPIO.output(8, GPIO.HIGH) # This line should be run when the on the Pi
             print("THERE IS A SIREN!!!!!!!!!     Majority by: ", number_of_true)  # This line should be run when the on the PC
             winsound.PlaySound("C:\\Windows\\media\\Ring01.wav", 1)

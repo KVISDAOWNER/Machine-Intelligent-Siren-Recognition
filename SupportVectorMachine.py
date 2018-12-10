@@ -5,7 +5,7 @@ import specgram_maker as sm
 
 if __name__ == "__main__":
     spec = sm.SpecgramMaker()
-    matrix, freq, t = spec.get_specgram_data_from_wav("Wav\\", "Sample_33_Chatting_Doorbells_WWIISiren_MusicWithSiren2_Rain.wav")
+    matrix, freq, t = spec.get_specgram_data_from_wav("C:\\Users\\kristoffer\\Desktop\\", "Sample_1996_sirenAt_11_Train_RainAndThunder_TelephoneRinging_Rain.wav")
     min_freq = 14
     max_freq = 32
     rows = []
