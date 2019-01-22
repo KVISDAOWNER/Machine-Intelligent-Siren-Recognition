@@ -2,8 +2,8 @@ import pickle
 from mic_recorder import MicRecorder
 import specgram_maker
 import matplotlib.pyplot as plot
-import winsound
-# import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
+# import winsound
+import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 
 NUM_FEATURES = 386
 

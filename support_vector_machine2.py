@@ -51,7 +51,7 @@ if __name__ == "__main__":
     lr_model = LogisticRegression()
     models = [[nb_model, "nb"], [tree_model, "tree"], [ran_model, "randomForest"], [svm_model, "svm"], [lr_model, "lr"]]
 
-    waves, labels = get_training_data("C:\\Users\\kristoffer\\Desktop\\music2.0\\", max_freq=1600, training=True, split=True, min_freq=700, divisions=6)
+    waves, labels = get_training_data("C:\\Users\\kristoffer\\Desktop\\music2.0\\", max_freq=1600, training=True, split=True, min_freq=700, divisions=5)
 
     print("Begin cutting")
     waves = cut(waves)
